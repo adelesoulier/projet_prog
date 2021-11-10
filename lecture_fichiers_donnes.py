@@ -33,8 +33,8 @@ Coordinates:
   => ces coordonnées permettent d'indexer les valeurs du tableau de donnée, chaque case correspond
   à une lat,long,prof et temp donné
   => cependant les indexs des tableaux sont des entiers donc pour avoir un point à (lat x; long y)
-  indice lat: (x + 89.75)/0.5
-  indice longitude: (x + 179.8)/0.5 
+  indice latitude: (x + 89.75)/0.5
+  indice longitude: (x + 179.75)/0.5 
   indice profondeur: 0
   indice temps: 0
   ''' 
@@ -44,6 +44,11 @@ Coordinates:
 
 #Afficher une case du tableau 4D sans les infos sur les données (juste les valeurs numériques)
 '''print(ds.NVEL[0,0, x, y].values)'''
+
+#Afficher le tableaux des longitudes ou lattitudes:
+'''print(ds.NVEL.longitude.values)'''
+'''print(ds.NVEL.latitude.values)'''
+
 
 #GÉNÉRER LE TABLEAU 2D (LATTITUDE, LONGITUDE) DES DONNÉES À LA SURFACE:
 data=ds.NVEL[0,0,:, :].values
