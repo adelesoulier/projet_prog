@@ -1,4 +1,5 @@
 // Code C projet prog, version Maëlle
+// test bcs pbs de commit
 
 #include <stdio.h>
 #include <stdlib.h>
