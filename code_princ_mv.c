@@ -109,6 +109,9 @@ bool readCsvGen(char * filename, double * values, int sizeX, int sizeY) {
     return true;
 }
 
+///////////////////////////
+// FONCTIONS DE CONVERSIONS
+///////////////////////////
 
 // Fonction qui fait la conversion des coordonnées de lat, longi en i 
 int ll2i(int lat, int longi){ 
@@ -119,13 +122,25 @@ int ll2i(int lat, int longi){
 int exactocasei(double lat, double longi){
     lat = (lat + 89.75)*2; //conversion de la latitude en la colonne (donne un entier pour tous les .25 et .75)
     longi = (longi + 179.75)*2; // idem, mais de longi en ligne
-    lat = floor(lat + 0.5); // arrondir à l'entier le plus proche (il n'y a que floor qui existe,
+    lat = (int) floor(lat + 0.5); // arrondir à l'entier le plus proche (il n'y a que floor qui existe,
     // mais si on fait + 0.5 revient au même que d'arrondir à l'entier le plus proche)
-    longi = floor(longi + 0.5);
+    longi = (int) floor(longi + 0.5);
     return longi*360 + lat; // on convertit en i
 }
 
+// Conversion de kg en nombre de plastique (moyenne pondérée) (FAIRE HEAVY TAIL SI POSSIBLE!!!!!!!!!!!!!!!!!!!!!!)
+int kg2nb(double kg){
 
+    double densiteMega = 0.0762;    // [nb/kg]
+    double densiteMacro = 41.05;    // [nb/kg]
+    double masseMega = 0.667*kg;    // [kg]
+    double masseMacro = 0.323*kg;   // [kg]
+
+    int nbMega = (int) floor(masseMega*densiteMega + 0.5); // on arrondit à l'entier le plus proche
+    int nbMacro = (int) floor(masseMacro*densiteMacro + 0.5); // idem
+
+    return nbMega + nbMacro;
+}
 
 
 void plastique(double lat, double longi, int years){
