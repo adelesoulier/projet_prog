@@ -85,25 +85,27 @@ bool readCsvGen(char * filename, double * values, int sizeX, int sizeY, int skip
         fprintf(stderr, "File %s not found.", filename);
         return false;
     }
-
+	
     int y = 0;
     char buffer[10000];
     while (fgets(buffer, 10000, file) != NULL) {
-        int x = 0;
-        char * start = buffer;
-        while (true) {
-            values[y * sizeX + x] = atof(start);
-            start = strchr(start, ',');
-            if (start == NULL) break;
-            start += 1;
+		if (y>=skip_y){
+			int x = 0;
+			char * start = buffer;
+			while (true) {
+				if(x>=skip_x){
+				values[(y-skip_y) * sizeX + (x-skip_x)] = atof(start); ;}
+				start = strchr(start, ',');
+				if (start == NULL) break;
+				start += 1;
 
-            x += 1;
-            if (x >= sizeX) break;
-        }
+				x += 1;
+				if (x >= sizeX+skip_x) break;
+			}}
 
-        y += 1;
-        if (y >= sizeY) break;
-    }
+			y += 1;
+			if (y >= sizeY+skip_y) break;
+		}
 
     fclose(file);
     return true;
@@ -332,7 +334,6 @@ int main(int argc, char * argv[]) {
 
     free(Cases);
     ////////////////////////    PARTIE ADÈLE       /////////////////////////////////////////
-    ////////////////////////   REGARDER LES NOTES!!!!!!      /////////////////////////////////////////
     free(gps_inputs);
     return 0;
 }
