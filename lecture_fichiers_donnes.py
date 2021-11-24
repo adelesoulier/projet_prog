@@ -13,8 +13,9 @@ import matplotlib as plt
 
 #ds=nom variable (ds pour data set)'''
 #indiquer le chemin jusqu'au fichier en argument
-ds = xr.open_dataset("/Users/adele/Desktop/informatique/NVEL_201511.nc").load()
-
+ds = xr.open_dataset("/Users/adele/Desktop/projet_prog/construction_moyennes/NVEL 2015/NVEL_201502.nc.part").load()
+data= ds.NVEL[0,0,:, :].values
+print(data.shape)
 #Afficher l'objet entier:
 '''print('Voici le datasat : \n\n')
 print(ds)'''
@@ -46,10 +47,10 @@ Coordinates:
 '''print(ds.NVEL[0,0, x, y].values)'''
 
 #Afficher le tableaux des longitudes ou lattitudes:
-'''print(ds.NVEL.longitude.values)'''
-'''print(ds.NVEL.latitude.values)'''
+'''print(ds.NVEL.longitude.values)
+print(ds.NVEL.latitude.values)'''
 
 
 #GÉNÉRER LE TABLEAU 2D (LATTITUDE, LONGITUDE) DES DONNÉES À LA SURFACE:
-data=ds.NVEL[0,0,:, :].values
-print(data)
+'''data=ds.NVEL[0,0,:, :].values
+print(data)'''
