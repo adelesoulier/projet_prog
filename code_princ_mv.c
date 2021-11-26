@@ -234,7 +234,7 @@ void GPGPinit(double * longInit, double * latInit, int saturation){
 // PROPAGATION DES PLASTIQUES
 //////////////////////////////
 
-void plastique(double longi, double lat, , int i, int saturation){
+void plastique(double longi, double lat, int saturation){
     int i = 0;
     double longExact = longi;
     double latExact = lat;
