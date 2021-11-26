@@ -1,5 +1,4 @@
 // Code C projet prog, version Maëlle
-// test bcs pbs de commit
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-// Je définis le tableau de structures (tableau malloc) qui
+// On définit le tableau de structures (tableau malloc) qui
 // contiendra toutes les cases
 
 struct courants {
@@ -21,9 +20,12 @@ struct courants {
 // dans une fonction.
 struct courants * Cases = NULL;
 
+///////////////////////////////////
+// FONCTIONS DE LECTURE DE FICHIERS
+///////////////////////////////////
 
 // Fonction pour lire le fichier CSV des courants et les mettre dans notre structure
-bool readCsvCourants(char * filenameNVEL, char * filenameEVEL, int sizeLat, int sizeLong) {
+bool readCsvCourants(char * filenameEVEL, char * filenameNVEL, int sizeLong, int sizeLat) {
     FILE * fileN = fopen(filenameNVEL, "r");
     FILE * fileE = fopen(filenameEVEL, "r");
     if (fileN == NULL) {
@@ -42,17 +44,17 @@ bool readCsvCourants(char * filenameNVEL, char * filenameEVEL, int sizeLat, int 
         int x = 0;
         char * start = buffer;
         while (true) {
-            Cases[y * sizeLat + x].compoN = atof(start);
+            Cases[y * sizeLong + x].compoN = atof(start);
             start = strchr(start, ',');
             if (start == NULL) break;
             start += 1;
 
             x += 1;
-            if (x >= sizeLat) break;
+            if (x >= sizeLong) break;
         }
 
         y += 1;
-        if (y >= sizeLong) break;
+        if (y >= sizeLat) break;
     }
     fclose(fileN);
 
@@ -60,17 +62,17 @@ bool readCsvCourants(char * filenameNVEL, char * filenameEVEL, int sizeLat, int 
         int x = 0;
         char * start = buffer;
         while (true) {
-            Cases[y * sizeLat + x].compoE = atof(start);
+            Cases[y * sizeLong + x].compoE = atof(start);
             start = strchr(start, ',');
             if (start == NULL) break;
             start += 1;
 
             x += 1;
-            if (x >= sizeLat) break;
+            if (x >= sizeLong) break;
         }
 
         y += 1;
-        if (y >= sizeLong) break;
+        if (y >= sizeLat) break;
     }
     fclose(fileE);
 
@@ -80,6 +82,7 @@ bool readCsvCourants(char * filenameNVEL, char * filenameEVEL, int sizeLat, int 
 
 // Fonction pour lire les fichiers CSV générale
 bool readCsvGen(char * filename, double * values, int sizeX, int sizeY, int skip_x, int skip_y) {
+    ////////////////////// ON A BIEN VERIF QUE CETTE FONCTION EST OK??????????????????????
     FILE * file = fopen(filename, "r");
     if (file == NULL) {
         fprintf(stderr, "File %s not found.", filename);
@@ -95,6 +98,7 @@ bool readCsvGen(char * filename, double * values, int sizeX, int sizeY, int skip
 			while (true) {
 				if(x>=skip_x){
 				values[(y-skip_y) * sizeX + (x-skip_x)] = atof(start); ;}
+                ///////////////// Y A PAS UN POINT VIRGULE DE TROP LA???????????????? (EN-DESSUS)
 				start = strchr(start, ',');
 				if (start == NULL) break;
 				start += 1;
@@ -116,20 +120,36 @@ bool readCsvGen(char * filename, double * values, int sizeX, int sizeY, int skip
 ///////////////////////////
 
 // Fonction qui fait la conversion des coordonnées de lat, longi en i 
-int ll2i(int lat, int longi){ 
-    return longi*360 + lat; 
-} // ON L'UTILISE ?????????????????????????????????
+int ll2i(int longi, int lat){ 
+    return lat*720 + longi; 
+}
 
-// Conversion des lati
-int exactocasei(double lat, double longi){
+// Conversion des latitudes et longitudes exactes (pas forcément .25 ou .75) en index i du tableau
+int exactocasei(double longi, double lat){
 	//Permet de déterminer dans quelle case de courrant nous sommes. (cases de 0.5° par 0.5°)
 	
     lat = (lat + 89.75)*2; //conversion de la latitude en la colonne (donne un entier pour tous les .25 et .75)
     longi = (longi + 179.75)*2; // idem, mais de longi en ligne
     lat = (int) floor(lat + 0.5); // arrondir à l'entier le plus proche (il n'y a que floor qui existe,
     // mais si on fait + 0.5 revient au même que d'arrondir à l'entier le plus proche)
+    // quand on arrive sur une valeur.5, on arrondit à la valeur du DESSUS (choix délibéré)
     longi = (int) floor(longi + 0.5);
-    return longi*360 + lat; // on convertit en i
+    return lat*720 + longi; // on convertit en i
+}
+
+// Conversion quand on rentre une longitude en la case correspondante dans un tableau 1D d'uniquement des longitudes
+int long2i1D(double longi){
+    longi = (longi + 179.75)*2; // idem, mais de longi en ligne
+    longi = (int) floor(longi + 0.5);
+    return longi;
+}
+
+// Conversion quand on rentre une latitude en la case correspondante dans un tableau 1D d'uniquement des latitudes
+int lat2i1D(double lat){
+    lat = (lat + 89.75)*2; //conversion de la latitude en la colonne (donne un entier pour tous les .25 et .75)
+    lat = (int) floor(lat + 0.5); // arrondir à l'entier le plus proche (il n'y a que floor qui existe,
+    // mais si on fait + 0.5 revient au même que d'arrondir à l'entier le plus proche)
+    return lat; // on a déjà i car ici l'index de latitude correspond directement à i (de 0 à 359)
 }
 
 // Conversion de kg en nombre de plastique (moyenne pondérée) (FAIRE HEAVY TAIL SI POSSIBLE!!!!!!!!!!!!!!!!!!!!!!)
@@ -146,17 +166,83 @@ int kg2nb(double kg){
     return nbMega + nbMacro;
 }
 
+////////////////////////////////////////////
+// INITIALISATION DU CONTINENT DE PLASTIQUES
+////////////////////////////////////////////
 
-void plastique(double lat, double longi, int years){
+void fctLatInit(double * latInit){
+    int I1 = lat2i1D(25); // 25°N est la coordonnée à partir de laquelle notre gradient de déchets va commencer
+    int I2 = lat2i1D(28); // à 28°N on est à saturation
+    int I3 = lat2i1D(36); // à partir de là on va commencer à diminuer en concentration
+    int I4 = lat2i1D(40); // on finit notre gradient de pollution à 40°
+    double concentration = 0;
+    double penteMontee = (double) 1/(I2-I1);
+    double penteDescente = (double) -1/(I4-I3);
+    for (int i = 0; i < 360; i++){
+        if (i < I1 || i > I4) latInit[i] = 0;
+        // si on est au-delà des limites extérieures, la concentration initiale en plastiques est nulle
+        // dans ce sens car est 0 en-bas et augmente en montant
+        else if (i >= I1 && i <= I2){
+            // si on est entre I1 et I2, on va de bas en haut, le gradient de plastiques augmente
+            concentration = penteMontee*(i-I1);
+            // on n'arrondit pas encore car on arrondit après (dans la fonction où l'on
+            // joint nos deux fonctions d'initialisation 1D) afin de gagner un peu en précision
+            latInit[i] = concentration;
+        } else if (i > I2 && i < I3) latInit[i] = 1; // on est dans la partie dense (saturée)
+        else if (i >= I3 && i <= I4){
+            // si on se situe en-dessus de la partie saturée, le gradient de pollution diminue
+            concentration = 1 + penteDescente*(i-I3);
+            latInit[i] = concentration;
+        }
+    }
+}
+
+void fctLongInit(double * longInit){
+    // cette fonction est très similaire à fctLongInit, s'y référer pour des explications
+    int I1 = long2i1D(-160); // est la limite à gauche de notre continent de plastique
+    int I2 = long2i1D(-144); // frontière gauche de partie dense du coninent de plastiques
+    int I3 = long2i1D(-134);
+    int I4 = long2i1D(-130);
+    double concentration = 0;
+    double penteMontee = (double) 1/(I2-I1);
+    double penteDescente = (double) -1/(I4-I3);
+    for (int i = 0; i < 720; i++){
+        if (i < I1 || i > I4) longInit[i] = 0;
+        // dans ce sens car est 0 à gauche et augmente en allant à droite
+        else if (i >= I1 && i <= I2){
+            concentration = penteMontee*(i-I1);
+            longInit[i] = concentration;
+        } else if (i > I2 && i < I3) longInit[i] = 1;
+        else if (i >= I3 && i <= I4){
+            concentration = 1 + penteDescente*(i-I3);
+            longInit[i] = concentration;
+        }
+    }
+}
+
+void GPGPinit(double * longInit, double * latInit, int saturation){
+    // on remplit la partie "compteur" de notre tableau de structures pour l'initialiser
+    for (int longi = 0; longi < 720; longi++){
+        for (int lat = 0; lat < 360; lat++){
+            int i = ll2i(longi, lat);
+            Cases[i].compteur = (int) floor(saturation*latInit[lat]*longInit[longi]);
+        }
+    }
+}
+
+//////////////////////////////
+// PROPAGATION DES PLASTIQUES
+//////////////////////////////
+
+void plastique(double longi, double lat, , int i, int saturation){
     int i = 0;
-    double latExact = lat;
     double longExact = longi;
-    int indexCase = exactocasei(latExact, longExact);
-    int prevIndexCase = exactocasei(latExact, longExact);
-    int saturation = 100; // A MODIFIER EN FONCTION DE LA CAPACITÉ QU'ON VEUT!!
+    double latExact = lat;
+    int indexCase = exactocasei(longExact, latExact);
+    int prevIndexCase = exactocasei(longExact, latExact);
 
 
-    //on fait premièrement simulation sur 1 an, avec avancée chaque heure
+    //on fait premièrement simulation sur years années, avec avancée chaque heure
     for (int t = 0; t < 24*365*years){
         // Courant marin: nous allons lire dans les fichiers csv les composantes
         // correspondant à la case dans laquelle se trouve notre plastique au temps t.
@@ -168,53 +254,64 @@ void plastique(double lat, double longi, int years){
         }
         
         // Composante du courant [deg/h]
-        double dlat = Cases[indexCase].compoN*1; //je fais *1 pour rappeler qu'on fait *1h
-        // (si on change boucle ou que unités pas des /h -> changer!!)
         double dlong = Cases[indexCase].compoE*1;
+        //je fais *1 pour rappeler qu'on fait *1h
+        // COMMENTAIRE A SUPPRIMER DANS RENDU FINAL!!!!!!!!!!!!!!!!:
+        // (si on change boucle ou que unités pas des /h -> changer
+        double dlat = Cases[indexCase].compoN*1;
+        
 
-        // Composante aléatoire du déplacement (vent, poisson ect...)
-        double alat = randomNumber(30) - 15; //
-        double along = randomNumber(30) - 15; // COMMENT DETERMINER SI C'EST UN BON ALEA?????????????????
-        // essayer, on est obligées de passer par visualisation des courants et trajectoire de notre plastique.....................
+        // Composante aléatoire du déplacement (vents, poissons ect...)
+        double alat = randomNumber(2e-5) - 1e-5;
+        double along = randomNumber(2e-5) - 1e-5;
+        // VOIR SI EST UN BON ALEA, POUR L'INSTANT ON MET CELA, EXPLIQUER POURQUOI
 
-        // Déplacer potentiel du plastique
-        latExact += dlat + alat;
+        // Déplacement potentiel du plastique (si cela n'implique pas une condition break)
         longExact += dlong + along;
+        latExact += dlat + alat;
         
-        //Cas d'un plastique se trouvant à une longitude de -180 ou 180:
-        //Les cases vont de -179.75 à 179.75, nous avons fait le choix dans la foncrion exactocasei que 
+        // Cas d'un plastique se trouvant à une longitude de -180 ou 180:
+        // Les cases vont de -179.75 à 179.75, nous avons fait le choix dans la fonction exactocasei que 
         // lorsqu'on se trouve à la frontière d'une case notre plastique va:
-        //-si c'est une frontière verticale: on passe à la case à droite de cette frontière
-        //-si c'est une frontière horizontale: on passe à la case au dessus de cette frontière
-        //Cela est du au fait que la fonction qui arrondi un nombre à l'entier le plus proche arrondis 
-        //à l'entier supperieur une valeur ayant une partie décimale égale à 0.5 .
-
+        // - si c'est une frontière verticale: on passe à la case à droite de cette frontière
+        // - si c'est une frontière horizontale: on passe à la case au dessus de cette frontière
+        // Cela est dû au fait que la fonction qui arrondit un nombre à l'entier le plus proche arrondit 
+        // à l'entier supérieur une valeur ayant une partie décimale égale à 0.5 .
         if (longExact >= 180){
-			longExact=-180+(longExact-180);}
+			longExact = -180 + (longExact-180);}
+            // Quand on est à 180 pile, on a également un problème d'arrondi (arrondit à la case 720, qui n'existe
+            // pas dans notre tableau).
 		if (longExact < -180){	
-			longExact=180+(longExact+180); }
+			longExact = 180 + (longExact+180);}
+            // Alors que quand on est à -180 pile, exactocasei le convertit en 0, ce qui n'est pas un problème par 
+            // rapport à notre tableau et est cohérent avec nos "hypothèses de frontières" énoncées ci-dessus.
         
         
-        indexCase = exactocasei(latExact, longExact);
+        indexCase = exactocasei(longExact, latExact);
 
         // On vérifie si on va rester dans la même case ou non
         if (prevIndexCase != indexCase){
             if (Cases[indexCase].compteur < saturation || Cases[indexCase].compoN == nan || Cases[indexCase].compoE == nan){
                 // CONDITION EST JUSTE ??????????????????????????????????????? BCS 3 "OU" ET LES NAN OK?????????????????????
-                Cases[indexCase].compteur -= 1;
+                Cases[prevIndexCase].compteur -= 1; 
+                // EST JUSTE????????????? PARCE QU'AVANT C'ETAIT Cases[indexCase].compteur -= 1;
                 i = 0; // si on sort de la case
             }
+            // COMMENTAIRES A ENLEVER POUR LE RENDU FINAL:
             // si on a des trucs négatifs dans les compteurs vient de là,
             // mais si fonctionne est pas censé arriver
 
             // sinon, donc si on a Cases[indexCase].compteur >= saturation, on sort de la fonction,
             // et le compteur de la case prevIndexCase a toujours le plastique en mémoire
+            // si la case dans laquelle on va n'est pas à saturation, on peut avancer donc on peut enlever 1 au compteur
+            // de la case d'avant. Si le plastique s'échoue sur une terre/une île (un nan), on enlève le plastique du
+            // compteur de la case dans l'eau et on l'ajoute à celui de la terre sur laquelle il arrive
 
         }
 
         // Conditions de terminaison:
         //  1) une case est saturée
-        //  2) on est sur un nan -> on l'enlève du compteur de la case dans l'eau et on ajoute à la case
+        //  2) on arrive sur un nan -> on l'enlève du compteur de la case dans l'eau et on ajoute à la case
         //      nan (ce qu'on a bien fait puisque la condition)
         //  3) autres???????????????????
 
@@ -229,12 +326,14 @@ void plastique(double lat, double longi, int years){
         // la saturation dans indexCase est déjà atteinte))
 
         //  2) nan dans le futur index
-        if (Cases[indexCase].compoN == nan || Cases[indexCase].compoE == nan) break;
-
+        if (Cases[indexCase].compoN == nan || Cases[indexCase].compoE == nan){
+            Cases[indexCase].compteur += 1; 
+            // le plastique s'est échoué, on l'ajoute sur la case sur laquelle il est (un nan)
+            break;
+        }
         prevIndexCase = indexCase;
-
-
-    }}
+    }
+}
     
 
 
@@ -243,17 +342,30 @@ int main(int argc, char * argv[]) {
     srandom(time(NULL));
 
     // On réserve la place pour notre tableau de cases
-    Cases = malloc(720*360 * sizeof (struct grille));
-    // Notre grille est de la forme (long, lat) :
-    // LONGITUDES = LIGNES (720) = y = compoE ???????????????????C'EST JUSTE???????????????
-    // LATITUDES = COLONNES (360) = x = compoN ???????????????????C'EST JUSTE???????????????
-    // avec la conversion ??????????????????????????
-
-    // on remplit le tableau malloc Cases
-    readCsvCases(("NOM_DU_FICHIER_COURANTS_MARINS.csv", 360, 720); 
+    Cases = malloc(720*360 * sizeof (struct courants));
+    // Notre grille de courants est de la forme (lat, longi) :
+    // LONGITUDES = COLONNES (720) = x = compoE 
+    // LATITUDES = LIGNES (360) = Y = compoN 
+    // avec la conversion lat = (lat + 89.75)*2 pour convertir les latitudes en index du tableau
+    // (pour plus de précisions, aller voir dans fonctions de conversions, lat2i1d ou exactocasei)
+    // et pour les longitudes: longi = (longi + 179.75)*2 (voir long2i1D)
     
+    // notre saturation de cases est (nombre de plastiques maximum admis par case, à cette valeur, la
+    // case est "pleine")
+    int saturation = 100 
+    /////////////////// ON MET QUOI???????????????????
 
-    
+    // on remplit le tableau malloc Cases (compoN et compoE)
+    readCsvCourants("NOM_DU_FICHIER_COURANTS_MARINS_EVEL.csv", "NOM_DU_FICHIER_COURANTS_MARINS_NVEL.csv", 720, 360); 
+    // nos fichiers sont en °/h (vitesse du courant).
+
+    // et on initialise notre continent de plastiques en mettant à jour les "compteurs" du tableau de structures
+    fctLongInit(longInit);
+    fctLatInit(latInit);
+    GPGPinit(longInit,latInit, saturation);
+    free(latInit);
+    free(longInit);
+    /////////////EST-CE QU'ON REUTILISE CES TABLEAUX APRES?????????????????????????????
 
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////    PARTIE ADÈLE       /////////////////////////////////////////
@@ -261,8 +373,9 @@ int main(int argc, char * argv[]) {
 	
 	//Ouverture des fichiers de données :
 	
-	double*gps_inputs=malloc(48*7 * sizeof(double)); //48 points GPS avec 7 infos dessus (colones) 
+	double*gps_inputs = malloc(48*7 * sizeof(double)); //48 points GPS avec 7 infos dessus (colones) 
     readCsvGen("gps_inputs.csv", gps_inputs, 7, 48);
+    /////////////// IL FAUT ACTUALISER CETTE FONCTION!!!!!!!!!! ici on n'a pas encore le skip x et skip y
    
     //X=colones ET Y=lignes 
 
@@ -318,18 +431,24 @@ int main(int argc, char * argv[]) {
 				double new_rate = actual_rate* pow([1+taux_croiss_dechets/100],y)
 				
 			
-				double actual_pop= (gps_inputs[3+7*c]*gps_inputs[4+7c]/100)/gps_inputs[2+7c] ; //pop tt pays * % habitant sur la cote pacifique / nb villes considérées dans le pays
+				double actual_pop= (gps_inputs[3+7*c]*gps_inputs[4+7*c]/100)/gps_inputs[2+7*c] ;
+                //pop tt pays * % habitant sur la cote pacifique / nb villes considérées dans le pays
 				double new_pop= actual_pop*pow([1+taux_croiss_pop/100],y);
 			
 				double kg_platique_produit = new_rate*new_pop/24 ;
-				double kg_plastique_ocean = kg_plastique*gps_inputs[6+7c];
+				double kg_plastique_ocean = kg_plastique*gps_inputs[6+7*c];
 				int nombre_plastique_ocean= kg2nb(kg_plastique_ocean) ;
 				
 			//Déplacement des plastiques émis dans l'océan:
 				for (int p=0; p<nombre_plastique_ocean; p++){            
-					plastique(lat,longi);}
+					plastique(longi,lat);
+                    // ON A UN PROBLEME ICI!!!!!!!!!! DEJA IL DEVRAIT Y AVOIR YEARS ET SATURATION DEDANS MAIS FERAIT
+                    // UNE BOUCLE D'ANNEES DANS UNE BOUCLE D'ANNEES, NE VA PAS!!!!!!!!!!!!!!!!!!!!
+                }
 
-					}}}
+           }
+        }
+    }   
 
 
     free(Cases);
