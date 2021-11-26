@@ -234,7 +234,7 @@ void GPGPinit(double * longInit, double * latInit, int saturation){
 // PROPAGATION DES PLASTIQUES
 //////////////////////////////
 
-void plastique(double longi, double lat, int years, int saturation){
+void plastique(double longi, double lat, int saturation){
     int i = 0;
     double longExact = longi;
     double latExact = lat;
@@ -254,12 +254,14 @@ void plastique(double longi, double lat, int years, int saturation){
         }
         
         // Composante du courant [deg/h]
-        double dlong = Cases[indexCase].compoE*1; //je fais *1 pour rappeler qu'on fait *1h
+        double dlong = Cases[indexCase].compoE*1;
+        //je fais *1 pour rappeler qu'on fait *1h
+        // COMMENTAIRE A SUPPRIMER DANS RENDU FINAL!!!!!!!!!!!!!!!!:
         // (si on change boucle ou que unités pas des /h -> changer
         double dlat = Cases[indexCase].compoN*1;
         
 
-        // Composante aléatoire du déplacement (vent, poisson ect...)
+        // Composante aléatoire du déplacement (vents, poissons ect...)
         double alat = randomNumber(2e-5) - 1e-5;
         double along = randomNumber(2e-5) - 1e-5;
         // VOIR SI EST UN BON ALEA, POUR L'INSTANT ON MET CELA, EXPLIQUER POURQUOI
@@ -355,7 +357,7 @@ int main(int argc, char * argv[]) {
 
     // on remplit le tableau malloc Cases (compoN et compoE)
     readCsvCourants("NOM_DU_FICHIER_COURANTS_MARINS_EVEL.csv", "NOM_DU_FICHIER_COURANTS_MARINS_NVEL.csv", 720, 360); 
-    // QUELLES SONT LES UNITES DE NOS FICHIERS???????????????? SONT BIEN DES °/H ???????????????
+    // nos fichiers sont en °/h (vitesse du courant).
 
     // et on initialise notre continent de plastiques en mettant à jour les "compteurs" du tableau de structures
     fctLongInit(longInit);
