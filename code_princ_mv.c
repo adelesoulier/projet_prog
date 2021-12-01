@@ -5,6 +5,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 
 // On définit les structures:
 
@@ -362,7 +363,7 @@ int main(int argc, char * argv[]) {
     // et pour les longitudes: longi = (longi + 179.75)*2 (voir long2i1D)
     
     // nombre de plastiques par paquet propagé
-    int plast_par_paquet = 10000
+    int plast_par_paquet = 10000;
     // notre saturation de cases est (nombre de plastiques maximum admis par case, à cette valeur, la
     // case est "pleine"), valeur calculée à partir de l'étude sur laquelle nous nous basons, nous avons
     // pris saturation = 55 kg/km² et fait la conversion pour le nombre de plastiques dans une case de
@@ -371,13 +372,17 @@ int main(int argc, char * argv[]) {
     /////////////////// CHANGER???????????????????
 
     // on remplit le tableau malloc Cases (compoN et compoE)
-    readCsvCourants("NOM_DU_FICHIER_COURANTS_MARINS_EVEL.csv", "NOM_DU_FICHIER_COURANTS_MARINS_NVEL.csv", 720, 360); 
+    readCsvCourants("EVELmoyenneconverted_new.csv", "NVELmoyenneconverted_new.csv", 720, 360); 
     // nos fichiers sont en °/h (vitesse du courant).
 
-    // et on initialise notre continent de plastiques en mettant à jour les "compteurs" du tableau de structures
+    // et on initialise notre continent de plastiques en mettant à jour les "compteurs" du tableau de structures:
+    
+    double * longInit = malloc(720 * sizeof(double));
+    double * latInit = malloc(360 * sizeof(double));
     fctLongInit(longInit);
     fctLatInit(latInit);
     GPGPinit(longInit,latInit, saturation);
+    
     free(latInit);
     free(longInit);
     /////////////EST-CE QU'ON REUTILISE CES TABLEAUX APRES?????????????????????????????
@@ -441,7 +446,7 @@ int main(int argc, char * argv[]) {
     scanf("%d",&duree);
     while (duree > anneesMax) {
         printf("Votre valeur dépasse la valeur demandée. Veuillez en rentrer une nouvelle.\n\n");
-	    scanf("%lf", &duree);
+	    scanf("%d", &duree);
     }
 
     // CALCUL DE LA TAILLE DES TABLEAUX MALLOC DE CHAQUE PAYS SELON LES INPUTS DE L'UTILISATEUR:
@@ -458,7 +463,7 @@ int main(int argc, char * argv[]) {
     }
 
     // On définit le tableau du nombre de paquet de plastique en temps réel émis par chaque pays:
-    int * longueur_reelle_tableaux = calloc(26 * sizeof(int));
+    int * longueur_reelle_tableaux = calloc(26 , sizeof(int));
 
     // DÉFINITION D'UN MALLOC POUR CHAQUE PAYS CONSIDÉRÉ :
     struct paquet * Australie = malloc( longueur_tableaux[0] * sizeof (struct paquet));
@@ -503,7 +508,7 @@ int main(int argc, char * argv[]) {
            
             /////////Australie: /////////
         
-            nb_villes=pays_inputs[0+5*pays_parcourus]; 
+            int nb_villes=pays_inputs[0+5*pays_parcourus]; 
            
             //ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
@@ -531,7 +536,7 @@ int main(int argc, char * argv[]) {
                     Australie[y*x_tot+x].longi=longi;
                     Australie[y*x_tot+x].i=0;
                 }
-                longueur_reelle_tableaux[pays_parcourus] += nombre_plastique_emis;
+                longueur_reelle_tableaux[pays_parcourus] += nombre_paquets_emis;
 
                 //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
 				for (int p=0; p<longueur_reelle_tableaux[pays_parcourus]; p++){     
@@ -549,8 +554,8 @@ int main(int argc, char * argv[]) {
            
             //ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
-            double actual_rate= pays_inputs[4+5*pays_parcourus];
-            double new_rate = actual_rate* pow([1+taux_croiss_dechets/100],y);
+            actual_rate= pays_inputs[4+5*pays_parcourus];
+            new_rate = actual_rate* pow([1+taux_croiss_dechets/100],y);
        
             double actual_pop= (pays_inputs[1+5*pays_parcourus]*pays_inputs[2+5*pays_parcourus]/100) ;
             double new_pop= actual_pop*pow([1+taux_croiss_pop/100],y);
