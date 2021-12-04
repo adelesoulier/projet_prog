@@ -13,7 +13,7 @@
 struct courants {
     double compoN;
     double compoE;
-    int compteur;
+    unsigned long compteur;
 };
 
 // celle pour chaque paquet de plastiques (propriétés de chaque paquet de plastiques)
@@ -176,18 +176,15 @@ int lat2i1D(double lat){
 }
 
 // Conversion de kg en nombre de plastique (moyenne pondérée) (FAIRE HEAVY TAIL SI POSSIBLE!!!!!!!!!!!!!!!!!!!!!!)
-int kg2nb(double kg, int plast_par_paquet){
+unsigned long kg2nb(double kg, int plast_par_paquet){
 
     double densiteMega = 0.0762;    // [nb/kg]
     double densiteMacro = 41.05;    // [nb/kg]
     double masseMega = 0.5357*kg;    // [kg]
     double masseMacro = 0.2551*kg;   // [kg]
 
-    int nbMega = (int) floor(masseMega*densiteMega/plast_par_paquet + 0.5); // on arrondit à l'entier le plus proche
-    // nous divisons ici par le nombre de plastiques par paquets parce que floor a une limite de capacité
-    // que nous dépassons si nous ne divisons pas par cette valeur. Cela donne donc des valeurs aberrantes 
-    // (négatives) notamment
-    int nbMacro = (int) floor(masseMacro*densiteMacro/plast_par_paquet + 0.5); // idem
+    unsigned long nbMega = (unsigned long) (masseMega*densiteMega/plast_par_paquet +0.5); // on arrondit à l'entier le plus proche
+    unsigned long nbMacro = (unsigned long) (masseMacro*densiteMacro/plast_par_paquet +0.5); // idem
 
     return nbMega + nbMacro;
 }
@@ -380,7 +377,7 @@ int main(int argc, char * argv[]) {
     // et pour les longitudes: longi = (longi + 179.75)*2 (voir long2i1D)
     
     // nombre de plastiques par paquet propagé
-    int plast_par_paquet = 10000;
+    int plast_par_paquet = 100000;
     // notre saturation de cases est (nombre de plastiques maximum admis par case, à cette valeur, la
     // case est "pleine"), valeur calculée à partir de l'étude sur laquelle nous nous basons, nous avons
     // pris saturation = 55 kg/km² et fait la conversion pour le nombre de plastiques dans une case de
@@ -428,17 +425,17 @@ int main(int argc, char * argv[]) {
 
     // On fixe les taux maximaux d'augmentation de production et de population, ainsi que le nombre d'années
     int anneesMax = 20;
-    double prodMax = 100;
-    double popMax = 100; // VOIR SI ON DOIT CHANGER!!!!!!!!!
+    double prodMax = 25;
+    double popMax = 10; // VOIR SI ON DOIT CHANGER!!!!!!!!!
 
     //INTERFACE UTILISATEUR:
 	printf(" Les taux de croissances que vous allez entrer fonctionnent de la manière suivante: \n\n" );
 	printf(" Chaque année durant la période qui sera entrée, la population et le taux de production de dechet augmenteront ou diminueront selon les valeurs entrées. \n\n" );
 	printf(" Les formats attendus sont les suivants: \n" );
 	printf("-taux de croissance annuel en pourcentage de la population mondiale : double  \n" );
-    printf(" Valeur maximale: 100.\n" );
+    printf(" Valeur maximale: 10.\n" );
 	printf("-taux de croissance annuel en pourcentage de la production de dechet mondiale : double\n");
-    printf(" Valeur maximale: 100.\n" );
+    printf(" Valeur maximale: 50.\n" );
 	printf("-durée de simulation : int (années entières)\n");
     printf(" Valeur maximale: 20.\n\n" );
 
@@ -471,31 +468,26 @@ int main(int argc, char * argv[]) {
     printf("\n");
 
     // CALCUL DE LA TAILLE DES TABLEAUX MALLOC DE CHAQUE PAYS SELON LES INPUTS DE L'UTILISATEUR:
-    int * longueur_tableaux = malloc(26 * sizeof(int));
+    unsigned long * longueur_tableaux = malloc(26 * sizeof(unsigned long));
     for (int c=0; c<26; c++){
+        
         double actual_rate= pays_inputs[4+5*c];
+        
         double new_rate = actual_rate* pow(1+taux_croiss_dechets/100,duree);
         // rate en [kg plastique dans l'ocean /person/day]
         double actual_pop= (pays_inputs[1+5*c]*pays_inputs[2+5*c]/100) ;
         double new_pop= actual_pop*pow(1+taux_croiss_pop/100,duree);
         
         double kg_plastique_ocean = new_pop*new_rate*365*duree;
+       
         longueur_tableaux[c]= kg2nb(kg_plastique_ocean, plast_par_paquet);
+       
     }
 
-    //////////////////////////////////////////
-    /////////////////DEBOGAGE/////////////////
-    //////////////////////////////////////////
-    for (int i = 0; i < 26; i++){
-        printf("%d\n", longueur_tableaux[i]);
-    }
-    // NE JAMAIS OUBLIER LE \n DANS LE PRINT!!!!! SINON LE SKIP (PB OPTIMISATION)
-    //////////////////////////////////////////
-    /////////////////DEBOGAGE/////////////////
-    //////////////////////////////////////////
+    
 
     // On définit le tableau du nombre de paquet de plastique en temps réel émis par chaque pays:
-    int * longueur_reelle_tableaux = calloc(26 , sizeof(int));
+    unsigned long * longueur_reelle_tableaux = calloc(26 , sizeof(unsigned long));
 
     // DÉFINITION D'UN MALLOC POUR CHAQUE PAYS CONSIDÉRÉ :
     struct paquet * Australie = malloc( longueur_tableaux[0] * sizeof (struct paquet));
@@ -537,7 +529,6 @@ int main(int argc, char * argv[]) {
             
             int nb_villes_parcourues = 0;
             int pays_parcourus = 0;
-           
             /////////Australie: /////////
         
             int nb_villes=pays_inputs[0+5*pays_parcourus]; 
@@ -552,14 +543,19 @@ int main(int argc, char * argv[]) {
 
             for(int c=0;c<nb_villes;c++){
                 //Coordonnée GPS considérées:
+
 				double lat= gps_inputs[1+7*nb_villes_parcourues];
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis = kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
-
+                
+                unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis,plast_par_paquet); // int divisé par int donne int (division entière)
+				
+				printf("paquets émits: %lu\n", nb_paquets_emis);
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p = 0; p < nb_paquets_emis ; p++){
+					 				printf("tesy");
+
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
                     int x= p + longueur_reelle_tableaux[pays_parcourus];
@@ -580,7 +576,8 @@ int main(int argc, char * argv[]) {
                 nb_villes_parcourues+=1;
             }
             pays_parcourus+=1;
-
+			
+			 
             ////// Canada //////
             nb_villes=pays_inputs[0+5*pays_parcourus]; 
            
@@ -598,7 +595,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis,plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -640,7 +637,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis,plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -651,9 +648,10 @@ int main(int argc, char * argv[]) {
                     Chili[y*x_tot+x].lat=lat;
                     Chili[y*x_tot+x].longi=longi;
                     Chili[y*x_tot+x].i=0;
+                     
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
-
+		
                 //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
 				for (int p=0; p<longueur_reelle_tableaux[pays_parcourus]; p++){     
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
@@ -682,7 +680,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis,plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -724,7 +722,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis,plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -766,7 +764,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+               unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis,plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -808,7 +806,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -850,7 +848,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -892,7 +890,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -934,7 +932,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -976,7 +974,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1019,7 +1017,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1061,7 +1059,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1103,7 +1101,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+               unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1146,7 +1144,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1188,7 +1186,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1230,7 +1228,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1273,7 +1271,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+               unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1315,7 +1313,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1358,7 +1356,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+               unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1400,7 +1398,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1443,7 +1441,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+               unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1485,7 +1483,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1527,7 +1525,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+               unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1569,7 +1567,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
@@ -1611,7 +1609,7 @@ int main(int argc, char * argv[]) {
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
                 double kg_plastique_emis = new_pop*new_rate/nb_villes*1; //[kg], on a un jour donc *1
-                int nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
+                unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); // int divisé par int donne int (division entière)
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
                 for(int p=0;p<nb_paquets_emis;p++){
