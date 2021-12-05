@@ -493,7 +493,7 @@ int main(int argc, char * argv[]) {
     struct paquet * Australie = malloc( longueur_tableaux[0] * sizeof (struct paquet));
     struct paquet * Canada = malloc( longueur_tableaux[1] * sizeof (struct paquet));
     struct paquet * Chili = malloc( longueur_tableaux[2] * sizeof (struct paquet));
-    struct paquet * Chine = malloc( longueur_tableaux[3] * sizeof (struct paquet));NULL;
+    struct paquet * Chine = malloc( longueur_tableaux[3] * sizeof (struct paquet));
     struct paquet * Colombie = malloc( longueur_tableaux[4] * sizeof (struct paquet));
     struct paquet * CostaRica = malloc( longueur_tableaux[5] * sizeof (struct paquet));
     struct paquet * Ecuador = malloc( longueur_tableaux[6] * sizeof (struct paquet));

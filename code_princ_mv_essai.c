@@ -433,11 +433,11 @@ int main(int argc, char * argv[]) {
 	printf(" Chaque année durant la période qui sera entrée, la population et le taux de production de dechet augmenteront ou diminueront selon les valeurs entrées. \n\n" );
 	printf(" Les formats attendus sont les suivants: \n" );
 	printf("-taux de croissance annuel en pourcentage de la population mondiale : double  \n" );
-    printf(" Valeur maximale: 10.\n" );
+    printf(" Valeur maximale: %0.0f.\n", popMax );
 	printf("-taux de croissance annuel en pourcentage de la production de dechet mondiale : double\n");
-    printf(" Valeur maximale: 50.\n" );
+    printf(" Valeur maximale: %0.0f.\n", prodMax );
 	printf("-durée de simulation : int (années entières)\n");
-    printf(" Valeur maximale: 20.\n\n" );
+    printf(" Valeur maximale: %d.\n\n", anneesMax );
 
 	double taux_croiss_pop;
 	double taux_croiss_dechets;
@@ -474,6 +474,34 @@ int main(int argc, char * argv[]) {
     // On définit le tableau du nombre de paquet de plastique en temps réel émis par chaque pays:
     unsigned long * longueur_reelle_tableaux = calloc(26 , sizeof(unsigned long));
 
+    // On définit les mallocs pour chaque pays
+    struct paquet * Australie = NULL;
+    struct paquet * Canada = NULL;
+    struct paquet * Chili = NULL;
+    struct paquet * Chine = NULL;
+    struct paquet * Colombie = NULL;
+    struct paquet * CostaRica = NULL;
+    struct paquet * Ecuador = NULL;
+    struct paquet * Salvador = NULL;
+    struct paquet * Guatemala = NULL;
+    struct paquet * Honduras = NULL;
+    struct paquet * HongKong = NULL;
+    struct paquet * Indonesie = NULL;
+    struct paquet * Japon = NULL;
+    struct paquet * CoreeDuNord = NULL;
+    struct paquet * CoreeDuSud = NULL;
+    struct paquet * Malaisie = NULL;
+    struct paquet * Mexique = NULL;
+    struct paquet * NouvelleCaledonie = NULL;
+    struct paquet * Nicaragua = NULL;
+    struct paquet * Panama = NULL;
+    struct paquet * Perou = NULL;
+    struct paquet * Philippines = NULL;
+    struct paquet * Russie = NULL;
+    struct paquet * Singapour = NULL;
+    struct paquet * USA = NULL;
+    struct paquet * Vietnam = NULL;
+
 	//INPUTS ET DÉPLACEMENT DES DÉCHETS DANS L'OCÉAN:
 	
 	//durée simulation duree [années] * 365 car nous actualisons notre système tous les jours:
@@ -509,7 +537,14 @@ int main(int argc, char * argv[]) {
 
             for(int c=0;c<nb_villes;c++){
                 //Coordonnée GPS considérées:
-
+                //////////////////////////////////////////
+                /////////////////DEBOGAGE/////////////////
+                    //////////////////////////////////////////
+                    printf("itération %d\n", count);
+                    count +=1;
+                    //////////////////////////////////////////
+                    /////////////////DEBOGAGE/////////////////
+                    //////////////////////////////////////////
 				double lat= gps_inputs[1+7*nb_villes_parcourues];
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
@@ -517,23 +552,14 @@ int main(int argc, char * argv[]) {
                 
                 unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis,plast_par_paquet); // int divisé par int donne int (division entière)
 				
-                // DÉFINITION D'UN MALLOC POUR L'AUSTRALIE
+                // on remplit le malloc pour l'Australie
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Australie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Australie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 } 
                 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p = 0; p < nb_paquets_emis ; p++){
-                    //////////////////////////////////////////
-                    /////////////////DEBOGAGE/////////////////
-                    //////////////////////////////////////////
-                    printf("itération %d\n", count);
-                    count +=1;
-                    //////////////////////////////////////////
-                    /////////////////DEBOGAGE/////////////////
-                    //////////////////////////////////////////
-                    
+                for(int p = 0; p < nb_paquets_emis ; p++){                    
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
                     int x= p + longueur_reelle_tableaux[pays_parcourus];
@@ -577,7 +603,7 @@ int main(int argc, char * argv[]) {
                 
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Canada = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Canada = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -624,7 +650,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Chili = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Chili = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -672,7 +698,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Chine = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Chine = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -719,7 +745,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Colombie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Colombie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -766,7 +792,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * CostaRica = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    CostaRica = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -813,7 +839,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Ecuador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Ecuador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -860,7 +886,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Salvador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Salvador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -907,7 +933,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Guatemala = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Guatemala = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -954,7 +980,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Honduras = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Honduras = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1001,7 +1027,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * HongKong = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    HongKong = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1049,7 +1075,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Indonesie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Indonesie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1096,7 +1122,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Japon = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Japon = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1143,7 +1169,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * CoreeDuNord = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    CoreeDuNord = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1191,7 +1217,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * CoreeDuSud = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    CoreeDuSud = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1238,7 +1264,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Malaisie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Malaisie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1285,7 +1311,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Mexique = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Mexique = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1333,7 +1359,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * NouvelleCaledonie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    NouvelleCaledonie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1380,7 +1406,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Nicaragua = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Nicaragua = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1428,7 +1454,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Panama = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Panama = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1475,7 +1501,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Perou = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Perou = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1523,7 +1549,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Philippines = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Philippines = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1570,7 +1596,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Russie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Russie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1617,7 +1643,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Singapour = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Singapour = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1664,7 +1690,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * USA = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    USA = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -1711,7 +1737,7 @@ int main(int argc, char * argv[]) {
  
                 if (a == 0 && j == 0 && c == 0){
                     longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
-                    struct paquet * Vietnam = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    Vietnam = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
