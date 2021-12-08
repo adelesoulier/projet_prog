@@ -13,7 +13,7 @@
 struct courants {
     double compoN;
     double compoE;
-    unsigned long compteur;
+    unsigned long long compteur;
 };
 
 // celle pour chaque paquet de plastiques (propriétés de chaque paquet de plastiques)
@@ -55,14 +55,10 @@ bool readCsvCourantsNVEL(char * filenameNVEL, int sizeLong, int sizeLat) {
             if (start == NULL) break;
             start += 1;
 
-
-            if (y * sizeLong + x == 55) break;
-
-
             x += 1;
             if (x >= sizeLong) break;
         }
-            if (y * sizeLong + x == 55) break;
+
         y += 1;
         if (y >= sizeLat) break;
     }
@@ -86,19 +82,15 @@ bool readCsvCourantsEVEL(char * filenameEVEL, int sizeLong, int sizeLat) {
         char * start = buffer;
         while (true) {
             Cases[y * sizeLong + x].compoE = atof(start);
-            printf("y : %d, x: %d\n", y, x);
-            printf("Case %d: %f\n",y * sizeLong + x, Cases[y * sizeLong + x].compoE);
 
             start = strchr(start, ',');
             if (start == NULL) break;
             start += 1;
 
-            if (y * sizeLong + x == 55) break;
-
             x += 1;
             if (x >= sizeLong) break;
         }
-            if (y * sizeLong + x == 55) break;
+
         y += 1;
         if (y >= sizeLat) break;
     }
@@ -159,7 +151,8 @@ double randomNumber(double max) {
 
 // Fonction qui fait la conversion des coordonnées de lat, longi en i 
 int ll2i(int longi, int lat){ 
-    return lat*720 + longi; 
+    int i = lat*720 + longi;
+    return i; 
 }
 
 // Conversion des latitudes et longitudes exactes (pas forcément .25 ou .75) en index i du tableau
@@ -172,7 +165,8 @@ unsigned long exactocasei(double longi, double lat){
     // mais si on fait + 0.5 revient au même que d'arrondir à l'entier le plus proche)
     // quand on arrive sur une valeur.5, on arrondit à la valeur du DESSUS (choix délibéré)
     longi = (int) floor(longi + 0.5);
-    return (unsigned long) lat*720 + longi; // on convertit en i
+    unsigned long i = lat*720 + longi;
+    return i; // on convertit en i
 }
 
 // Conversion quand on rentre une longitude en la case correspondante dans un tableau 1D d'uniquement des longitudes
@@ -384,6 +378,9 @@ int main(int argc, char * argv[]) {
     
     // On réserve la place pour notre tableau de cases
     Cases = calloc(720*360, sizeof (struct courants));
+
+
+
     // Notre grille de courants est de la forme (lat, longi) :
     // LONGITUDES = COLONNES (720) = x = compoE 
     // LATITUDES = LIGNES (360) = Y = compoN 
@@ -419,14 +416,7 @@ int main(int argc, char * argv[]) {
     free(longInit);
     /////////////EST-CE QU'ON REUTILISE CES TABLEAUX APRES?????????????????????????????
 
-    ///TESTT DEBUUUGGGGGG///
 
-    double a2= Cases[55].compteur;
-    double b2= Cases[55].compoN;
-    int c2= Cases[55].compoE;
-
-
-printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
     // Ouverture des fichiers de données :
 
 	// Pour le tableau contenant aussi les villes (et leurs points GPS):
@@ -585,10 +575,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 } 
                 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p = 0; p < nb_paquets_emis ; p++){                    
+                for(int p = 0+longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus] ; p++){                    
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Australie[y*x_tot+x].lat=lat;
                     Australie[y*x_tot+x].longi=longi;
@@ -633,10 +623,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Canada[y*x_tot+x].lat=lat;
                     Canada[y*x_tot+x].longi=longi;
@@ -680,10 +670,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Chili[y*x_tot+x].lat=lat;
                     Chili[y*x_tot+x].longi=longi;
@@ -728,10 +718,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Chine[y*x_tot+x].lat=lat;
                     Chine[y*x_tot+x].longi=longi;
@@ -775,10 +765,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Colombie[y*x_tot+x].lat=lat;
                     Colombie[y*x_tot+x].longi=longi;
@@ -822,10 +812,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     CostaRica[y*x_tot+x].lat=lat;
                     CostaRica[y*x_tot+x].longi=longi;
@@ -869,10 +859,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Ecuador[y*x_tot+x].lat=lat;
                     Ecuador[y*x_tot+x].longi=longi;
@@ -916,10 +906,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Salvador[y*x_tot+x].lat=lat;
                     Salvador[y*x_tot+x].longi=longi;
@@ -963,10 +953,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Guatemala[y*x_tot+x].lat=lat;
                     Guatemala[y*x_tot+x].longi=longi;
@@ -1010,10 +1000,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Honduras[y*x_tot+x].lat=lat;
                     Honduras[y*x_tot+x].longi=longi;
@@ -1057,10 +1047,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     HongKong[y*x_tot+x].lat=lat;
                     HongKong[y*x_tot+x].longi=longi;
@@ -1105,10 +1095,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Indonesie[y*x_tot+x].lat=lat;
                     Indonesie[y*x_tot+x].longi=longi;
@@ -1152,10 +1142,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Japon[y*x_tot+x].lat=lat;
                     Japon[y*x_tot+x].longi=longi;
@@ -1199,10 +1189,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     CoreeDuNord[y*x_tot+x].lat=lat;
                     CoreeDuNord[y*x_tot+x].longi=longi;
@@ -1247,10 +1237,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     CoreeDuSud[y*x_tot+x].lat=lat;
                     CoreeDuSud[y*x_tot+x].longi=longi;
@@ -1294,10 +1284,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Malaisie[y*x_tot+x].lat=lat;
                     Malaisie[y*x_tot+x].longi=longi;
@@ -1341,10 +1331,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Mexique[y*x_tot+x].lat=lat;
                     Mexique[y*x_tot+x].longi=longi;
@@ -1389,10 +1379,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     NouvelleCaledonie[y*x_tot+x].lat=lat;
                     NouvelleCaledonie[y*x_tot+x].longi=longi;
@@ -1436,10 +1426,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Nicaragua[y*x_tot+x].lat=lat;
                     Nicaragua[y*x_tot+x].longi=longi;
@@ -1484,10 +1474,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Panama[y*x_tot+x].lat=lat;
                     Panama[y*x_tot+x].longi=longi;
@@ -1531,10 +1521,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Perou[y*x_tot+x].lat=lat;
                     Perou[y*x_tot+x].longi=longi;
@@ -1579,10 +1569,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Philippines[y*x_tot+x].lat=lat;
                     Philippines[y*x_tot+x].longi=longi;
@@ -1626,10 +1616,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Russie[y*x_tot+x].lat=lat;
                     Russie[y*x_tot+x].longi=longi;
@@ -1673,10 +1663,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Singapour[y*x_tot+x].lat=lat;
                     Singapour[y*x_tot+x].longi=longi;
@@ -1720,10 +1710,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     USA[y*x_tot+x].lat=lat;
                     USA[y*x_tot+x].longi=longi;
@@ -1767,10 +1757,10 @@ printf("%f ,  compo N: %f   ,compoE: %d\n\n",a2,b2,c2);
                 }
 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
-                for(int p=0;p<nb_paquets_emis;p++){
+                for(int p=0+longueur_reelle_tableaux[pays_parcourus];p<nb_paquets_emis+longueur_reelle_tableaux[pays_parcourus];p++){
                     int x_tot= longueur_tableaux[pays_parcourus]/nb_villes;
                     int y = c;
-                    int x= p + longueur_reelle_tableaux[pays_parcourus];
+                    int x= p ;
                     //indexation : indice ligne * indice colone * nb total de colone
                     Vietnam[y*x_tot+x].lat=lat;
                     Vietnam[y*x_tot+x].longi=longi;
