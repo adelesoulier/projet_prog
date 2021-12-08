@@ -521,7 +521,7 @@ int main(int argc, char * argv[]) {
     unsigned long * longueur_reelle_tableaux = calloc(26 , sizeof(unsigned long));
     
     //TABLEAU FINAL CONTENANT LES COMPTEURS DE PLASTIQUES DE CHAQUE ANNÉE:
-    int * CSV_output = calloc(360*720*duree, sizeof(int));
+    int * CSV_output = calloc(360*720*(duree+1), sizeof(int));
     //INDEXATION DE CSV_OUTPUT:
     //1 ligne = 1 année
     //chaque colone = valeur du compteur de plastique pour une case 
@@ -566,7 +566,7 @@ int main(int argc, char * argv[]) {
     //On écrit dans notre tableau des valeurs du compteur pour chaque année les valeurs intitiales avant de lancer la simmulation: (GPGP initial)
     
     for (int i=0;i<360*720;i++){
-		 CSV_output [1*360*720+i]=Cases[i].compteur;}
+		 CSV_output[i]+=Cases[i].compteur;}
     
     
     
