@@ -402,7 +402,7 @@ void plastique(struct paquet * paquet, int saturation){
     
 
 int main(int argc, char * argv[]) {
-    printf("Check\n");
+    
     // on initialise le temps, sera utile pour aléatoire de propagation d'un plastique
     srandom(time(NULL));
     
