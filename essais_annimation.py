@@ -23,6 +23,17 @@ print(years,nb_values)
 ##??? inutile
 max=np.max(GPGP)
 print(max)
+
+Long = np.zeros(259200)
+Lat = np.zeros(259200)
+long0 = -179.75
+lat0 = 89.75
+for lat in range(360):
+    for long in range(720):
+        Long[long] = long0 + long*0.5
+        Lat[long] = lat0 - long*0.5
+
+
 Long = np.arange(-179.75, 180.25, 0.5)  
 Lat = np.arange(-89.75, 90.25, 0.5)
 
