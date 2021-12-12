@@ -558,6 +558,11 @@ int main(int argc, char * argv[]) {
     // Cependant, nous aurions aussi pu faire un seul tableau malloc, avec une indexation bien définie, qui prend en compte le nombre
     // changeant de villes par pays. Le code aurait été plus court, l'indexation plus compliquée.
     
+    //On écrit dans notre tableau des valeurs du compteur pour chaque année les valeurs intitiales avant de lancer la simmulation: (GPGP initial)
+    
+    for (int i=0;i<360*720;i++){
+		 CSV_output[i]+=Cases[i].compteur;}
+
     //////////////////////////////////////////
     /////////////////DEBOGAGE/////////////////
     //////////////////////////////////////////
