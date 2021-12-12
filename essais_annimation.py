@@ -24,18 +24,13 @@ print(years,nb_values)
 max=np.max(GPGP)
 print(max)
 
-Long = np.zeros(259200)
-Lat = np.zeros(259200)
-long0 = -179.75
-lat0 = 89.75
-for lat in range(360):
-    for long in range(720):
-        Long[long] = long0 + long*0.5
-        Lat[long] = lat0 - long*0.5
+longi = np.arange(-179.75, 180.25, 0.5)  
+lati = np.arange(-89.75, 90.25, 0.5)
+xy = np.meshgrid(longi,lati)
+Longi = xy[0].flatten()
+Lati = xy[1].flatten()
 
 
-Long = np.arange(-179.75, 180.25, 0.5)  
-Lat = np.arange(-89.75, 90.25, 0.5)
 
 #Création du fond de carte
 orth = ccrs.Orthographic(central_longitude= 180, central_latitude=23, globe=None)

@@ -402,7 +402,7 @@ void plastique(struct paquet * paquet, int saturation){
     
 
 int main(int argc, char * argv[]) {
-    
+
     // on initialise le temps, sera utile pour aléatoire de propagation d'un plastique
     srandom(time(NULL));
     
@@ -1827,8 +1827,8 @@ int main(int argc, char * argv[]) {
            
             }
         //On update notre tableau final on y mettant les valeurs des compteurs obtenus pour l'année en cours    
-       for (int i=0;i<360*720;i++){
-		 CSV_output [(a+1)*360*720+i]=Cases[i].compteur;}
+        for (int i=0;i<360*720;i++){
+		CSV_output [(a+1)*360*720+i]=Cases[i].compteur;}
 		 
     }
     
