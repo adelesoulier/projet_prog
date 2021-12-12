@@ -30,6 +30,32 @@ struct paquet {
 // dans une fonction.
 struct courants * Cases = NULL;
 
+///////////////////////////////////
+// FONCTIONS D'ÉCRITURE DE FICHIERS
+///////////////////////////////////
+
+int writeCsv(char * filename, int*tableau, int duree) {
+
+  int y = duree;
+  
+  FILE *fichier = fopen(filename, "w+"); 	 	
+  if (fichier == NULL) {
+    printf("File %s can't be created.", filename);
+    return 0;
+    }
+
+    for (int i=0; i<y*360*720; i++){
+	    int fillvalue = tableau[i];
+	  
+	    if ((i+1)%(360*720)==0){
+	    fprintf(fichier," %d\n",fillvalue);
+	    continue;
+        }
+	    fprintf(fichier," %d,",fillvalue);
+    }
+    fclose(fichier);     
+    return 0;
+}
 
 ///////////////////////////////////
 // FONCTIONS DE LECTURE DE FICHIERS
@@ -487,6 +513,14 @@ int main(int argc, char * argv[]) {
 
     // On définit le tableau du nombre de paquet de plastique en temps réel émis par chaque pays:
     unsigned long * longueur_reelle_tableaux = calloc(26 , sizeof(unsigned long));
+    
+    //TABLEAU FINAL CONTENANT LES COMPTEURS DE PLASTIQUES DE CHAQUE ANNÉE:
+    int * CSV_output = calloc(360*720*(duree+1), sizeof(int));
+    //INDEXATION DE CSV_OUTPUT:
+    //1 ligne = 1 année
+    //chaque colone = valeur du compteur de plastique pour une case 
+    //année * 360*720 + colone (=i)
+
 
     // On définit les mallocs pour chaque pays
     struct paquet * Australie = NULL;
@@ -1621,9 +1655,15 @@ int main(int argc, char * argv[]) {
             pays_parcourus+=1;
 
            
-            }
+        }
+        //On update notre tableau final on y mettant les valeurs des compteurs obtenus pour l'année en cours    
+        for (int i=0;i<360*720;i++){
+		CSV_output [(a+1)*360*720+i]=Cases[i].compteur;}
     }
-       
+     //On écrit le CSV final:
+    char * filename = "actualisationGPGP.csv";
+    writeCsv(filename,CSV_output,(duree+1));
+
     free(Cases);
     free(gps_inputs);
     free(pays_inputs);
