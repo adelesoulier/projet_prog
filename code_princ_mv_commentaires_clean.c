@@ -376,7 +376,6 @@ void plastique(struct paquet * paquet, int saturation){
     //  1) Case saturée
     if (Cases[indexCase].compteur >= saturation){
         paquet->i = 2;
-        Cases[prevIndexCase].compteur += 1;
         return;
     }
         // ///////////////////////////////// C'EST FAUX CA NON? POURQUOI ON AJOUTE 1 AU COMPTEUR???? ON L'A DÉJA FAIT SI
