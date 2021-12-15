@@ -340,8 +340,8 @@ void plastique(struct paquet * paquet, int saturation){
     }
         
     // Composante du courant [°/h]
-    double dlong = Cases[indexCase].compoE*24*1000;
-    double dlat = Cases[indexCase].compoN*24*1000;
+    double dlong = Cases[indexCase].compoE*24*10;
+    double dlat = Cases[indexCase].compoN*24*10;
 
 
     // Composante aléatoire du déplacement (vents, poissons ect...)
@@ -385,6 +385,10 @@ void plastique(struct paquet * paquet, int saturation){
                 paquet->i = 0; // si la case n'est pas pleine, on peut le déplacer
                 // il vient donc d'arriver sur une nouvelle case
             }
+        }
+        else{
+            Cases[prevIndexCase].compteur -= 1;
+            paquet->i = 0;
         }
         // sinon, donc si on a Cases[indexCase].compteur >= saturation, on sort de la fonction,
         // et le compteur de la case prevIndexCase a toujours le plastique en mémoire
@@ -439,13 +443,11 @@ int main(int argc, char * argv[]) {
     // case est "pleine"), valeur calculée à partir de l'étude sur laquelle nous nous basons, nous avons
     // pris saturation = 55 kg/km² et fait la conversion pour le nombre de plastiques dans une case de
     // 0.5°x0.5° et arrondi vers le haut
-    /////////////////////// LES TROIS LIGNES DU DESSUS NE SONT PAS VRAIES POUR L'INSTANT!!!!!!!!!!!!!!!!!!!!
-    int saturation = 2000;
-    /////////////////// CHANGER???????????????????
+    int saturation = 200;
 
     // on remplit le tableau malloc Cases (compoN et compoE)
-    readCsvCourantsNVEL("NVELmoyenneconverted_new.csv", 720, 360);
-    readCsvCourantsEVEL("EVELmoyenneconverted_new.csv", 720, 360);
+    readCsvCourantsNVEL("NVELmoyenne.csv", 720, 360);
+    readCsvCourantsEVEL("EVELmoyenne.csv", 720, 360);
     // nos fichiers sont en °/h (vitesse du courant).
 
     // et on initialise notre continent de plastiques en mettant à jour les "compteurs" du tableau de structures:
@@ -477,15 +479,7 @@ int main(int argc, char * argv[]) {
     // - pays_inputs[0+5*c]=> nombre de villes dans pays , pays_inputs[1+5*c]=> population pays 2021,
     //   pays_inputs[2+5*c]=> % pop in pacific coast, pays_inputs[3+5*c]=> waste generation rate,
     //   pays_inputs[4+5*c]=> part des déchets qui finissent dans l'eau [kg/person/day]
-    
-    //////////////////////////////////////////
-    /////////////////DEBOGAGE/////////////////
-    //////////////////////////////////////////
-    printf("EVEL random: %f\n", Cases[78987].compoE);
-    printf("NVEL random: %f\n", Cases[78987].compoN);
-    //////////////////////////////////////////
-    /////////////////DEBOGAGE/////////////////
-    //////////////////////////////////////////
+
 
     // On fixe les taux maximaux d'augmentation de production et de population, ainsi que le nombre d'années
     int anneesMax = 15;
@@ -615,8 +609,7 @@ int main(int argc, char * argv[]) {
                 //////////////////////////////////////////
                 /////////////////DEBOGAGE/////////////////
                 //////////////////////////////////////////
-                printf("itération %d\n", count);
-                count +=1;
+                
                 //////////////////////////////////////////
                 /////////////////DEBOGAGE/////////////////
                 //////////////////////////////////////////
