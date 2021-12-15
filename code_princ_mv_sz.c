@@ -340,8 +340,8 @@ void plastique(struct paquet * paquet, int saturation){
     }
         
     // Composante du courant [°/h]
-    double dlong = Cases[indexCase].compoE*24;
-    double dlat = Cases[indexCase].compoN*24;
+    double dlong = Cases[indexCase].compoE*24*1000;
+    double dlat = Cases[indexCase].compoN*24*1000;
 
 
     // Composante aléatoire du déplacement (vents, poissons ect...)
@@ -1681,7 +1681,7 @@ int main(int argc, char * argv[]) {
 		CSV_output [(a+1)*360*720+i]=Cases[i].compteur;}
     }
     //On écrit le CSV final:
-    char * filename = "actualisationGPGP.csv";
+    char * filename = "actualisationGPGP1000.csv";
     writeCsv(filename,CSV_output,(duree+1));
 
     free(Cases);
