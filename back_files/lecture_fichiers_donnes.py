@@ -1,9 +1,6 @@
-
+#---------------------------------------------#
 #CODE DE BASE POUR LA LECTURE DES FICHIERS .nc
 #---------------------------------------------#
-'''NVEL = Northward Component of Velocity (m/s)'''
-
-#importation des modules:
 import ecco_v4_py as ecco
 import numpy as np
 import xarray as xr
@@ -12,10 +9,9 @@ import matplotlib as plt
 #ouverture du fichier .nc:
 
 #ds=nom variable (ds pour data set)'''
-#indiquer le chemin jusqu'au fichier en argument
 ds = xr.open_dataset("/Users/adele/Desktop/projet_prog/construction_moyennes/NVEL 2015/NVEL_201502.nc.part").load()
 data= ds.NVEL[0,0,:, :].values
-print(data.shape)
+
 #Afficher l'objet entier:
 '''print('Voici le datasat : \n\n')
 print(ds)'''
