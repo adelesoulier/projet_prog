@@ -27,8 +27,8 @@ print(max)
 longi = np.arange(-179.75, 180.25, 0.5)  
 lati = np.arange(-89.75, 90.25, 0.5)
 xy = np.meshgrid(longi,lati)
-Longi = xy[0].flatten()
-Lati = xy[1].flatten()
+Long = xy[0].flatten()
+Lat = xy[1].flatten()
 
 
 

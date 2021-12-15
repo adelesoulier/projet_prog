@@ -293,6 +293,26 @@ void GPGPinit(double * longInit, double * latInit, int saturation){
     }
 }
 
+//////////////////////////////////////
+// DEFINITION DE LA ZONE DE SATURATION
+//////////////////////////////////////
+
+int saturationzone(double longi, double lat){
+    int SZ = 0;
+    if ((longi >= 170 || (longi >= -180 && longi <= -127)) && (lat >= -5 && lat <= 43)){
+        SZ = 1;
+    }
+    // Pour remédier au problème du fait que proche des côtes les émissions de plastiques sont très denses
+    // (car nous avons compacté en un à trois point(s) les émissions d'un pays et que les plastiques n'avancent
+    // pas très vite), nous définissons une zone autour du GPGP de saturation, à 30° à gauche et en-dessous de ce
+    // dernier car il n'y a pas de terres dans ces zones, mais à 3° en-dessus et à droite car la côte des Etats-Unis
+    // est très proche de ce côté.
+
+    /////////////////////////////////ATTENTION SI ON CHANGE LES DEGRES LIMITATION, IL FAUT CHANGER LE COMMENTAIRE
+    
+    return SZ;
+}
+
 //////////////////////////////
 // PROPAGATION DES PLASTIQUES
 //////////////////////////////
@@ -351,13 +371,15 @@ void plastique(struct paquet * paquet, int saturation){
         // Alors que quand on est à -180 pile, exactocasei le convertit en 0, ce qui n'est pas un problème par 
         // rapport à notre tableau et est cohérent avec nos "hypothèses de frontières" énoncées ci-dessus.
         
-        
+    int sz = saturationzone(longitemp, lattemp);
     indexCase = exactocasei(longitemp, lattemp);
 
     // On vérifie si on va rester dans la même case ou non
     if (prevIndexCase != indexCase){
-        if (Cases[indexCase].compteur < saturation || isnan(Cases[indexCase].compoN) || isnan(Cases[indexCase].compoE)){
+        if (isnan(Cases[indexCase].compoN) || isnan(Cases[indexCase].compoE)){
             Cases[prevIndexCase].compteur -= 1; // on enlève le paquet de la case précédente dans laquelle il était
+        }
+        if (sz == 1){ // si nous sommes dans la zone de saturation, il faut prendre la saturation en compte:
             if (Cases[indexCase].compteur < saturation) paquet->i = 0; // si la case n'est pas pleine, on peut le déplacer
             // il vient donc d'arriver sur une nouvelle case
         }
@@ -373,11 +395,13 @@ void plastique(struct paquet * paquet, int saturation){
     //  2) on arrive sur un nan -> on l'enlève du compteur de la case dans l'eau et on ajoute à la case
     //      nan (ce qu'on a bien fait au-dessus dans la condition)
 
+    if (sz == 1){
     //  1) Case saturée
-    if (Cases[indexCase].compteur >= saturation){
-        paquet->i = 2;
-        return;
-        // le paquet reste où il était car la case d'à côté est saturée, mais il ne doit à présent plus bouger
+        if (Cases[indexCase].compteur >= saturation){
+            paquet->i = 2;
+            return;
+            // le paquet reste où il était car la case d'à côté est saturée, mais il ne doit à présent plus bouger
+        }
     }
     //  2) nan dans le futur index
     if ( isnan(Cases[indexCase].compoN) || isnan(Cases[indexCase].compoE) ){
@@ -413,7 +437,7 @@ int main(int argc, char * argv[]) {
     // pris saturation = 55 kg/km² et fait la conversion pour le nombre de plastiques dans une case de
     // 0.5°x0.5° et arrondi vers le haut
     /////////////////////// LES TROIS LIGNES DU DESSUS NE SONT PAS VRAIES POUR L'INSTANT!!!!!!!!!!!!!!!!!!!!
-    int saturation = 2000000000/plast_par_paquet;
+    int saturation = 2000;
     /////////////////// CHANGER???????????????????
 
     // on remplit le tableau malloc Cases (compoN et compoE)
