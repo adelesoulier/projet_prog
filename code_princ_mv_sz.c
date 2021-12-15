@@ -380,8 +380,11 @@ void plastique(struct paquet * paquet, int saturation){
             Cases[prevIndexCase].compteur -= 1; // on enlève le paquet de la case précédente dans laquelle il était
         }
         if (sz == 1){ // si nous sommes dans la zone de saturation, il faut prendre la saturation en compte:
-            if (Cases[indexCase].compteur < saturation) paquet->i = 0; // si la case n'est pas pleine, on peut le déplacer
-            // il vient donc d'arriver sur une nouvelle case
+            if (Cases[indexCase].compteur < saturation){
+                Cases[prevIndexCase].compteur -= 1;
+                paquet->i = 0; // si la case n'est pas pleine, on peut le déplacer
+                // il vient donc d'arriver sur une nouvelle case
+            }
         }
         // sinon, donc si on a Cases[indexCase].compteur >= saturation, on sort de la fonction,
         // et le compteur de la case prevIndexCase a toujours le plastique en mémoire
