@@ -340,8 +340,8 @@ void plastique(struct paquet * paquet, int saturation){
     }
         
     // Composante du courant [°/h]
-    double dlong = Cases[indexCase].compoE*24*1000;
-    double dlat = Cases[indexCase].compoN*24*1000;
+    double dlong = Cases[indexCase].compoE*24*10;
+    double dlat = Cases[indexCase].compoN*24*10;
 
 
     // Composante aléatoire du déplacement (vents, poissons ect...)
@@ -439,9 +439,7 @@ int main(int argc, char * argv[]) {
     // case est "pleine"), valeur calculée à partir de l'étude sur laquelle nous nous basons, nous avons
     // pris saturation = 55 kg/km² et fait la conversion pour le nombre de plastiques dans une case de
     // 0.5°x0.5° et arrondi vers le haut
-    /////////////////////// LES TROIS LIGNES DU DESSUS NE SONT PAS VRAIES POUR L'INSTANT!!!!!!!!!!!!!!!!!!!!
-    int saturation = 2000;
-    /////////////////// CHANGER???????????????????
+    int saturation = 200;
 
     // on remplit le tableau malloc Cases (compoN et compoE)
     readCsvCourantsNVEL("NVELmoyenneconverted_new.csv", 720, 360);
