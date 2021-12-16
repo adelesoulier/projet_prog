@@ -345,8 +345,8 @@ void plastique(struct paquet * paquet, int saturation){
 
 
     // Composante aléatoire du déplacement (vents, poissons ect...)
-    double alat = randomNumber(2e-5) - 1e-5;
-    double along = randomNumber(2e-5) - 1e-5;
+    double alat = randomNumber(2e-4) - 1e-4;
+    double along = randomNumber(2e-4) - 1e-4;
     // pour trouver cet aléa, nous avons regardé les valeurs moyennes des courants, et en regardant quel était les ordres de
     // grandeur les plus fréquents, nous avons estimé cet aléa en nous disant qu'il était raisonnable: aux endroits où le courant
     // est très faible, il y a beaucoup d'aléa, et aux endroits où il est plus fort, l'aléa a un rôle moins important.
@@ -423,7 +423,6 @@ void plastique(struct paquet * paquet, int saturation){
     
 
 int main(int argc, char * argv[]) {
-    printf("Check\n");
     // on initialise le temps, sera utile pour aléatoire de propagation d'un plastique
     srandom(time(NULL));
     
@@ -622,8 +621,14 @@ int main(int argc, char * argv[]) {
 				
                 // on remplit le malloc pour l'Australie à la première itération seulement
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Australie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
+                    // nous faisons des mallocs un peu trop grands, mais cela ne change rien pour le simulation
+                    // et cela nous permet de raccourcir un peu le code
                 } 
                 
                 //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
@@ -664,7 +669,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet);
                 
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Canada = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -705,7 +714,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet);
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Chili = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -747,7 +760,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet);
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Chine = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -788,7 +805,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet);
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Colombie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -829,7 +850,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet);
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     CostaRica = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -870,7 +895,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Ecuador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -911,7 +940,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Salvador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -952,7 +985,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Guatemala = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -993,7 +1030,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Honduras = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1034,7 +1075,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     HongKong = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1076,7 +1121,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Indonesie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1117,7 +1166,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Japon = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1158,7 +1211,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     CoreeDuNord = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1200,7 +1257,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     CoreeDuSud = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1241,7 +1302,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Malaisie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1282,7 +1347,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Mexique = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1324,7 +1393,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     NouvelleCaledonie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1365,7 +1438,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Nicaragua = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1407,7 +1484,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Panama = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1448,7 +1529,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Perou = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1490,7 +1575,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Philippines = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1531,7 +1620,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Russie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1572,7 +1665,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Singapour = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1613,7 +1710,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     USA = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
@@ -1654,7 +1755,11 @@ int main(int argc, char * argv[]) {
                 unsigned long nb_paquets_emis= kg2nb(kg_plastique_emis, plast_par_paquet); 
  
                 if (a == 0 && j == 0 && c == 0){
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis*nb_villes*365*duree;
+                    double new_rate_max = actual_rate* pow(1+taux_croiss_dechets/100,duree);
+                    double new_pop_max= actual_pop*pow(1+taux_croiss_pop/100,duree);
+                    double kg_plastique_emis_max = new_pop_max*new_rate_max/nb_villes*1;
+                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max,plast_par_paquet);
+                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max*nb_villes*365*duree;
                     Vietnam = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
