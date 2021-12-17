@@ -318,9 +318,11 @@ int saturationzone(double longi, double lat){
 //////////////////////////////
 
 void plastique(struct paquet * paquet, int saturation){
+   
     unsigned long indexCase = exactocasei(paquet->longi, paquet->lat);
     unsigned long prevIndexCase = exactocasei(paquet->longi, paquet->lat);
-
+        
+    
     // Explication des i:
     // - i = 0 : si le paquet vient d'arriver sur la case actuelle (n'y était pas à l'itération d'avant)
     // - i = 1 : si le paquet était déjà sur la case actuelle (à l'itération d'avant)
@@ -334,14 +336,14 @@ void plastique(struct paquet * paquet, int saturation){
     // correspondant à la case dans laquelle se trouve notre plastique au temps t.
 
     // Est-ce que le plastique était déjà dans la case ou non? (Si non: i == 0 avant)
-    if (paquet->i == 0){
+    if (paquet->i == 0){ 
         Cases[indexCase].compteur += 1;
         paquet->i = 1;
     }
         
     // Composante du courant [°/h]
-    double dlong = Cases[indexCase].compoE*24*10;
-    double dlat = Cases[indexCase].compoN*24*10;
+    double dlong = Cases[indexCase].compoE*24;
+    double dlat = Cases[indexCase].compoN*24;
 
 
     // Composante aléatoire du déplacement (vents, poissons ect...)
@@ -366,27 +368,38 @@ void plastique(struct paquet * paquet, int saturation){
 		longitemp = -180 + (longitemp-180);}
         // Quand on est à 180 pile, on a également un problème d'arrondi (arrondit à la case 720, qui n'existe
         // pas dans notre tableau).
-	if (longitemp < -180){	
+	if (longitemp < -180){ 
 		longitemp = 180 + (longitemp+180);}
         // Alors que quand on est à -180 pile, exactocasei le convertit en 0, ce qui n'est pas un problème par 
         // rapport à notre tableau et est cohérent avec nos "hypothèses de frontières" énoncées ci-dessus.
         
     int sz = saturationzone(longitemp, lattemp);
     indexCase = exactocasei(longitemp, lattemp);
+	       
 
     // On vérifie si on va rester dans la même case ou non
     if (prevIndexCase != indexCase){
         if (isnan(Cases[indexCase].compoN) || isnan(Cases[indexCase].compoE)){
             Cases[prevIndexCase].compteur -= 1; // on enlève le paquet de la case précédente dans laquelle il était
+              paquet->longi = longitemp;
+		      paquet->lat = lattemp;
+		       Cases[indexCase].compteur += 1; 
+               // le plastique s'est échoué, on l'ajoute sur la case sur laquelle il est (un nan)
+               paquet->i = 2;
+               return;
         }
         if (sz == 1){ // si nous sommes dans la zone de saturation, il faut prendre la saturation en compte:
             if (Cases[indexCase].compteur < saturation){
                 Cases[prevIndexCase].compteur -= 1;
                 paquet->i = 0; // si la case n'est pas pleine, on peut le déplacer
-                // il vient donc d'arriver sur une nouvelle case
-            }
-        }
-        else{
+                // il vient donc d'arriver sur une nouvelle case 
+                }
+           
+            else {
+            paquet->i = 2;
+            return; }}
+            
+        else {
             Cases[prevIndexCase].compteur -= 1;
             paquet->i = 0;
         }
@@ -401,24 +414,10 @@ void plastique(struct paquet * paquet, int saturation){
     //  1) la case d'à côté est saturée
     //  2) on arrive sur un nan -> on l'enlève du compteur de la case dans l'eau et on ajoute à la case
     //      nan (ce qu'on a bien fait au-dessus dans la condition)
-
-    if (sz == 1){
-    //  1) Case saturée
-        if (Cases[indexCase].compteur >= saturation){
-            paquet->i = 2;
-            return;
-            // le paquet reste où il était car la case d'à côté est saturée, mais il ne doit à présent plus bouger
-        }
-    }
-    //  2) nan dans le futur index
-    if ( isnan(Cases[indexCase].compoN) || isnan(Cases[indexCase].compoE) ){
-        Cases[indexCase].compteur += 1; 
-        // le plastique s'est échoué, on l'ajoute sur la case sur laquelle il est (un nan)
-        paquet->i = 2;
-        return;
-    }
+   
     paquet->longi = longitemp;
     paquet->lat = lattemp;
+    
 }
     
 
@@ -579,13 +578,6 @@ int main(int argc, char * argv[]) {
     for (int i=0;i<360*720;i++){
 		 CSV_output[i]+=Cases[i].compteur;}
 
-    //////////////////////////////////////////
-    /////////////////DEBOGAGE/////////////////
-    //////////////////////////////////////////
-    int count = 1;
-    //////////////////////////////////////////
-    /////////////////DEBOGAGE/////////////////
-    //////////////////////////////////////////
 
 	for (int a=0; a<duree; a++){
 		for (int j = 0; j < 365; j++){
@@ -605,13 +597,7 @@ int main(int argc, char * argv[]) {
 
             for(int c=0;c<nb_villes;c++){
                 //Coordonnée GPS considérées:
-                //////////////////////////////////////////
-                /////////////////DEBOGAGE/////////////////
-                //////////////////////////////////////////
-                
-                //////////////////////////////////////////
-                /////////////////DEBOGAGE/////////////////
-                //////////////////////////////////////////
+              
 				double lat= gps_inputs[1+7*nb_villes_parcourues];
 				double longi= gps_inputs[0+7*nb_villes_parcourues]; 
                 
@@ -1787,7 +1773,7 @@ int main(int argc, char * argv[]) {
 		CSV_output [(a+1)*360*720+i]=Cases[i].compteur;}
     }
     //On écrit le CSV final:
-    char * filename = "actualisationGPGP1000.csv";
+    char * filename = "actualisationGPGPkimarche.csv";
     writeCsv(filename,CSV_output,(duree+1));
 
     free(Cases);
