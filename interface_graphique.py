@@ -10,9 +10,9 @@ import matplotlib.cbook as cbook
 
 
 #Ouverture des données:
-GPGP = np.genfromtxt("/Users/adele/Desktop/actualisationGPGP.csv", delimiter=',')
+GPGP = np.genfromtxt("/Users/adele/Desktop/test de code/actualisationGPGPkimarche.csv", delimiter=',')
 GPGP_highlight=np.copy(GPGP)
-GPS_points = np.genfromtxt("/Users/adele/Desktop/gps_inputs.csv", delimiter=',')
+GPS_points = np.genfromtxt("/Users/adele/Desktop/test de code/gps_inputs.csv", delimiter=',')
 
 #Paramètres de la simulation:
 years= GPGP.shape[0]
@@ -35,11 +35,12 @@ for i in range(1,GPS_points.shape[0]):
     plt.scatter(x=GPS_points[i,2], y=GPS_points[i,3],color="black",s=1, alpha=0.5, transform= ccrs.PlateCarree())
    
 '''
-ax.add_feature(cf.OCEAN)
-ax.coastlines()
-ax.gridlines()
-ax.add_feature(cf.BORDERS)
+#ax.add_feature(cf.OCEAN)
+#ax.coastlines()
+#ax.gridlines()
+#ax.add_feature(cf.BORDERS)
 '''
+
 
 
 
@@ -94,7 +95,7 @@ def animation_GPGP(years):
     plot = plt.scatter(Longi[sel], Lati[sel], c=GPGP_highlight[years,sel], s=1, cmap=plt.cm.jet,transform=ccrs.PlateCarree())
     date = ax.annotate(f"Année:{years}\n", xy=(7, 7), xycoords='figure points', zorder=12)
     plt.title(label=f" Simulation du GPGP : The Great Pacific Garbage Patch", size= 'x-small', verticalalignment='bottom')
-    plt.clim(vmin=0, vmax=2000)
+    plt.clim(vmin=0, vmax=200)
 
     #paramètres de la légende:
     cbar = plt.colorbar(orientation='horizontal', shrink=0.75)
@@ -105,7 +106,7 @@ def animation_GPGP(years):
     simu = ax.annotate(f"Durée de la simulation: {years} ans", xy=(7, 30), xycoords='figure points', zorder=12, size='x-small')
 
     
-animGPGP = animation.FuncAnimation(fig,animation_GPGP,init_func=init, frames= time, interval=5000, repeat =False)  
+animGPGP = animation.FuncAnimation(fig,animation_GPGP,init_func=init, frames= time, interval=1000, repeat =False)  
 #plt.savefig('simulation_GPGP.mp4')
 plt.show()
 
