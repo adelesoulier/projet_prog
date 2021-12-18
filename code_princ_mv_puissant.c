@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -584,7 +585,17 @@ int main(int argc, char * argv[]) {
 		 CSV_output[i]+=Cases[i].compteur;}
 
 
+    
+
 	for (int a=0; a<duree; a++){
+            ////////////////////////////////////////
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    //////////// Où on se situe/////////////
+    printf("année: %d\n", a);
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    ////////////////////////////////////////
 		for (int j = 0; j < 365; j++){
             int nb_villes_parcourues = 0;
             int pays_parcourus = 0;
@@ -1778,7 +1789,7 @@ int main(int argc, char * argv[]) {
 		CSV_output [(a+1)*360*720+i]=Cases[i].compteur;}
     }
     //On écrit le CSV final:
-    char * filename = "actualisationGPGPkimarche.csv";
+    char * filename = "15ans.csv";
     writeCsv(filename,CSV_output,(duree+1));
 
     free(Cases);
