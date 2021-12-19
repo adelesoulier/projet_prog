@@ -10,11 +10,13 @@ import matplotlib as mpl
 #déplacement des plastiques au fil des ans.
 
 #Ouverture des données:
-GPGP = np.genfromtxt("/Users/adele/Desktop/test de code/1an10-10.csv", delimiter=',')
+
+# Le nom du fichier à préciser est celui donné par le code en C. 
+GPGP = np.genfromtxt("3ans_final.csv", delimiter=',')
 GPGP_highlight=np.copy(GPGP)
-GPS_points = np.genfromtxt("/Users/adele/Desktop/test de code/gps_inputs.csv", delimiter=',')
-EVEL = np.genfromtxt("/Users/adele/Desktop/test de code/EVELmoyenne.csv", delimiter=',')
-NVEL = np.genfromtxt("/Users/adele/Desktop/test de code/NVELmoyenne_essais.csv", delimiter=',')
+GPS_points = np.genfromtxt("/donnees/gps_inputs.csv", delimiter=',')
+EVEL = np.genfromtxt("/donnees/EVELmoyenne.csv", delimiter=',')
+NVEL = np.genfromtxt("donnees/NVELmoyenne.csv", delimiter=',')
 
 #Paramètres de la simulation:
 years= GPGP.shape[0]
@@ -32,7 +34,6 @@ fig = plt.figure(1)
 orth = ccrs.PlateCarree(central_longitude= 180, globe=None)
 ax = plt.axes(projection=orth)
 ax.stock_img()
-ax.coastlines()
 
 ###############################################################
 # FIGURE 1 : ANIMATION DE L'OCÉAN PACIFIQUE ET DES PLASTIQUES
