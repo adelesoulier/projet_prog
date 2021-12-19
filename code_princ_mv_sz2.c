@@ -279,17 +279,18 @@ unsigned long kg2nb(double kg, int plast_par_paquet){
 ////////////////////////////////////////////
 
 void fctLatInit(double *latInit){
+    // Les latitudes suivantes sont inspirées de l'études sur laquelle nous nous sommes basées.
+    // Si l'on va de bas en haut:
     int I1 = lat2i1D(25); // 25°N est la coordonnée à partir de laquelle notre gradient de déchets va commencer
     int I2 = lat2i1D(28); // à 28°N on est à saturation
     int I3 = lat2i1D(36); // à partir de là on va commencer à diminuer en concentration
     int I4 = lat2i1D(40); // on finit notre gradient de pollution à 40°
     double concentration = 0;
-    double penteMontee = (double)1 / (I2 - I1);
-    double penteDescente = (double)-1 / (I4 - I3);
+    double penteMontee = (double) 1 / (I2 - I1);
+    double penteDescente = (double) -1 / (I4 - I3);
     for (int i = 0; i < 360; i++)  {
         if (i < I1 || i > I4) latInit[i] = 0;
         // si on est au-delà des limites extérieures, la concentration initiale en plastiques est nulle
-        // dans ce sens car est 0 en-bas et augmente en montant
         else if (i >= I1 && i <= I2)
         {
             // si on est entre I1 et I2, on va de bas en haut, le gradient de plastiques augmente
@@ -359,9 +360,9 @@ void GPGPinit(double *longInit, double *latInit, int saturation)
 
 int saturationzone(double longi, double lat)
 {
-    // Pour remédier au problème que, proche des côtes, les émissions de plastiques sont très denses
-    // ( comme précisé dans le rapport nous avons condensé en un à trois point(s) les émissions d'un pays et les plastiques n'avancent
-    // pas très vite), nous définissons une zone autour du GPGP où la saturation est effective:
+    // Pour remédier au problème que, proche des côtes, les émissions de plastiques sont très denses. Comme précisé
+    // dans le rapport, nous avons condensé en un à trois point(s) les émissions d'un pays et les plastiques n'avancent
+    // pas très vite. Nous définissons une zone autour du GPGP où la saturation est effective:
     // à 30° à gauche et en-dessous de ce dernier car il n'y a pas de terres dans ces zones,
     // et à 3° en-dessus et à droite car la côte des Etats-Unis est très proche de ce côté.
 
@@ -377,9 +378,10 @@ int saturationzone(double longi, double lat)
 //Fonction permettant d'effectuer le déplacement d'un paquet de plastique.
 void plastique(struct paquet *paquet, int saturation)
 {
-
     int indexCase = exactocasei(paquet->longi, paquet->lat);
     int prevIndexCase = exactocasei(paquet->longi, paquet->lat);
+
+    // Pour l'explication des i, se référer au début du code, au-dessus de la stucture paquet.
 
     // Est-ce qu'on doit laisser le paquet immobile? (i == 2)
     if (paquet->i == 2)
@@ -421,7 +423,7 @@ void plastique(struct paquet *paquet, int saturation)
         longitemp = -180 + (longitemp - 180);
     }
     // Quand on est à 180 pile, on a également un problème d'arrondi (arrondit à la case 720, qui n'existe
-    // pas dans notre tableau).
+    // pas dans notre tableau, on s'arrête à 719).
     if (longitemp < -180)
     {
         longitemp = 180 + (longitemp + 180);
@@ -429,14 +431,16 @@ void plastique(struct paquet *paquet, int saturation)
     // Alors que quand on est à -180 pile, exactocasei le convertit en 0, ce qui n'est pas un problème par
     // rapport à notre tableau et est cohérent avec nos "hypothèses de frontières" énoncées ci-dessus.
 
-    //On regarde si on se trouve dans la zone de saturation effective:
+    // On regarde si on se trouve dans la zone de saturation effective:
+    // Si nous avons un indice sz == 1, c'est que nous nous trouvons à l'intérieur de cette zone, sinon nous
+    // sommes en-dehors.
     int sz = saturationzone(longitemp, lattemp);
     indexCase = exactocasei(longitemp, lattemp);
 
     // On vérifie si le plastique va rester dans la même case ou non:
     if (prevIndexCase != indexCase)
     {
-        //Cas où le plastique s'échoue sur un contient : les composantes du courrant sont des Nan
+        // Cas où le plastique s'échoue sur un contient : les composantes du courant sont des Nan
         if (isnan(Cases[indexCase].compoN) || isnan(Cases[indexCase].compoE))
         {
             // on enlève le paquet de la case précédente dans laquelle il était
@@ -446,18 +450,18 @@ void plastique(struct paquet *paquet, int saturation)
             paquet->lat = lattemp;
             // on actualise le compteur de plastique de la nouvelle case:
             Cases[indexCase].compteur += 1;
-            // actualisation de son index i pour ne plus avoir à le déplacer après (il est bloqué/arrêté/échoué)
+            // actualisation de son index i pour ne plus avoir à le déplacer après (il est échoué)
             paquet->i = 2;
             return;
         }
 
-        // cas où le plastiqu est dans la zone de saturation effective, il faut prendre cette dernière en compte:
+        // Cas où le plastique est dans la zone de saturation effective, il faut prendre cette dernière en compte:
         if (sz == 1)
         {
             if (Cases[indexCase].compteur < saturation)
             {
                 // si la case n'est pas saturée en plastique, on peut l'y déplacer
-                //et enlever 1 au compteur de sa préccédente case
+                // et enlever 1 au compteur de sa précédente case
                 Cases[prevIndexCase].compteur -= 1;
                 // on actualise son i à 0 car il vient d'arriver sur une nouvelle case
                 paquet->i = 0;
@@ -471,8 +475,8 @@ void plastique(struct paquet *paquet, int saturation)
         }
         else
         {
-            //Si nous ne sommes pas dans cette zone de saturation le plastique peut se déplacer dans sa nouvelle
-            //case dans tous les cas
+            // Si nous ne sommes pas dans cette zone de saturation le plastique peut se déplacer dans sa nouvelle
+            // case dans tous les cas
             Cases[prevIndexCase].compteur -= 1;
             paquet->i = 0;
         }
@@ -480,7 +484,7 @@ void plastique(struct paquet *paquet, int saturation)
 
     // Résumé des conditions d'arrêt:
     //  1) la case d'à côté est saturée
-    //  2) on arrive sur une terre (courrant = nan)
+    //  2) on arrive sur une terre (courant = nan)
 
     //Si rien ne bloque le déplacement du plastique on le déplace en actualisant ses coordonnées géographiques
     paquet->longi = longitemp;
@@ -494,7 +498,7 @@ void plastique(struct paquet *paquet, int saturation)
 int main(int argc, char *argv[])
 {
 
-    // on initialise le temps, sera utile pour aléatoire de propagation d'un plastique
+    // on initialise le temps, sera utile pour l'aléatoire de propagation d'un plastique
     srandom(time(NULL));
 
     // On réserve la mémoire pour notre tableau de cases de 0.5° x 0.5°
@@ -508,10 +512,12 @@ int main(int argc, char *argv[])
 
     // nombre de plastiques par paquet propagé
     int plast_par_paquet = 10000;
-    // notre saturation de cases est (nombre de plastiques maximum admis par case, à cette valeur, la
-    // case est "pleine"), valeur calculée à partir de l'étude sur laquelle nous nous basons, nous avons
+
+    // notre saturation de cases est le nombre de plastiques maximum admis par case. A cette valeur, la
+    // case est "pleine". Elle est calculée à partir de l'étude sur laquelle nous nous basons, nous avons
     // pris saturation = 55 kg/km² et fait la conversion pour le nombre de plastiques dans une case de
-    // 0.5°x0.5° et arrondi vers le haut
+    // 0.5°x0.5° et arrondi vers le haut. Elle est effective uniquement dans une zone délimitée (aller voir
+    // la fonction saturationzone).
     int saturation = 200;
 
     // on remplit le tableau malloc Cases (compoN et compoE)
@@ -519,7 +525,7 @@ int main(int argc, char *argv[])
     bool read2 = readCsvCourantsEVEL("EVELmoyenne.csv", 720, 360);
     // nos fichiers sont en °/h (vitesse du courant).
 
-    // et on initialise notre continent de plastiques en mettant à jour les "compteurs" du tableau de structures:
+    // et on initialise notre continent de plastiques en mettant à jour les compteurs du tableau de structures:
     double *longInit = malloc(720 * sizeof(double));
     double *latInit = malloc(360 * sizeof(double));
     fctLongInit(longInit);
@@ -534,67 +540,73 @@ int main(int argc, char *argv[])
 
     // Pour le tableau contenant les point GPS d'input des déchets :
 
-    //48 points GPS avec 7 infos dessus (colonnes)
+    // 48 points GPS avec 7 infos dessus (colonnes), provenant d'une étude, voir rapport pour la référence
     double *gps_inputs = malloc(48 * 7 * sizeof(double));
     bool read3 = readCsvGen("gps_inputs.csv", gps_inputs, 7, 48, 2, 1);
     // INDEXATION DU TABLEAU:
-    // - gps_inputs[0+7*c]=>longitude du point GPS
-    // - gps_inputs[1+7*c]=>latitude du point gps
-    // - gps_inputs[2+7*c]=>nombre de point GPS considéré dans le pays
-    // - gps_inputs[3+7*c]=>pop du pays en 2021
-    // - gps_inputs[4+7*c]=> % de la popluation totale du pays vivant sur la côte pacifique (population à considérer),
-    // - gps_inputs[5+7*c]=> waste generation rate (non utilisé dans ce code)
-    // - gps_inputs[6+7*c]=> part des déchets finissant dans l'océan [kg/person/day]
+    // - gps_inputs[0+7*c] => longitude du point GPS
+    // - gps_inputs[1+7*c] => latitude du point gps
+    // - gps_inputs[2+7*c] => nombre de point(s) GPS considéré(s) dans le pays
+    // - gps_inputs[3+7*c] => pop du pays en 2021
+    // - gps_inputs[4+7*c] => % de la popluation totale du pays vivant sur la côte pacifique (population à considérer),
+    // - gps_inputs[5+7*c] => waste generation rate (non utilisé dans ce code)
+    // - gps_inputs[6+7*c] => part des déchets finissant dans l'océan [kg/person/day]
     // avec c (city) l'indice de la ville de 0 à 48 (exclus)
     // Les pays sont triés par ordre alphabétique.
 
-    // TABLEAU CONTENANT LES DONNÉES RELATIVES AUX PAYS SEULS:
+    // TABLEAU CONTENANT LES DONNÉES RELATIVES AUX PAYS SEULS: (semblable au précédent, mais nécessaire)
+    // pour réserver la place nécessaire dans nos mallocs de chaque pays.
     double *pays_inputs = malloc(26 * 5 * sizeof(double));
     bool read4 = readCsvGen("pays_inputs.csv", pays_inputs, 5, 26, 1, 1);
     //INDEXATION DU TABLEAU:
-    // - pays_inputs[0+5*c]=> nombre de villes dans pays
-    // - pays_inputs[1+5*c]=> population pays 2021
-    // - pays_inputs[2+5*c]=> % de la popluation totale du pays vivant sur la côte pacifique (population à considérer)
-    // - pays_inputs[3+5*c]=> waste generation rate,
-    // - pays_inputs[4+5*c]=> part des déchets qui finissent dans l'eau [kg/person/day]
+    // - pays_inputs[0+5*c] => nombre de villes dans pays
+    // - pays_inputs[1+5*c] => population pays 2021
+    // - pays_inputs[2+5*c] => % de la popluation totale du pays vivant sur la côte pacifique (population à considérer)
+    // - pays_inputs[3+5*c] => waste generation rate,
+    // - pays_inputs[4+5*c] => part des déchets qui finissent dans l'eau [kg/person/day]
 
     // Gestion d'erreur: on vérifie si les fichiers ont tous bien été lus:
     if (read1 == false || read2 == false || read3 == false || read4 == false)
     {
         printf("\n");
         printf("La simulation ne peut pas commencer car les fichiers n'ont pas tous été trouvés.\n");
-        printf("Veuillez vérifier les chemins d'accès aux fichiers NVELmoyenne.csv, EVELmoyenne.csv, gps_inputs.csv et pays_inputs.csv.\n");
+        printf("Veuillez vérifier les chemins d'accès aux fichiers NVELmoyenne.csv, EVELmoyenne.csv, gps_inputs.csv et pays_inputs.csv puis relancer le code.\n");
         return 0;
     }
 
     // On fixe les taux maximaux d'augmentation de production et de population,
-    //ainsi que le nombre d'années maximal pour la simmulation (des entrées plus grandes ne seraient pas
-    // gérables et entraîneraient des segmentation fault)
-    int anneesMax = 15;
+    // ainsi que le nombre d'années maximal pour la simmulation (des entrées plus grandes ne seraient 
+    // nécessiteraient une RAM très élevée).
+    int anneesMax = 8;
     double prodMax = 50;
     double popMax = 10;
 
-    //////////////////////////////////
-    //     INTERFACE UTILISATEUR.ICE:   //
-    //////////////////////////////////
+    /////////////////////////////////////
+    //    INTERFACE UTILISATEUR.ICE:   //
+    /////////////////////////////////////
 
     printf(" \n \n");
     printf(" Projet de Programmation: Simulation du continent de plastique , the GPGP (the Great Pacific Garbage Patch . \n\n\n");
-    printf(" Les taux de croissances que vous allez entrer fonctionnent de la manière suivante: \n\n");
-    printf(" Chaque année durant la période qui sera entrée, la population et le taux de production de déchêt augmenteront ou diminueront selon les valeurs entrées. \n\n");
+    printf(" Les taux de croissances que vous allez entrer fonctionnent de la manière suivante: \n\n"); 
+    printf(" Chaque année durant la période qui sera entrée, la population et le taux de production de déchet augmenteront ou diminueront selon les valeurs entrées. \n\n");
     printf(" Les formats attendus sont les suivants: \n\n");
-    printf("-taux de croissance annuel en pourcentage de la population mondiale : double  \n");
+    printf(" -taux de croissance annuel en pourcentage de la population mondiale : double  \n");
     printf(" Valeur maximale: %0.0f.\n\n", popMax);
-    printf("-taux de croissance annuel en pourcentage de la production de dechet mondiale : double\n");
+    printf(" -taux de croissance annuel en pourcentage de la production de déchet mondiale : double\n");
     printf(" Valeur maximale: %0.0f.\n\n", prodMax);
-    printf("-durée de simulation : int (années entières)\n");
-    printf(" Valeur maximale: %d.\n\n\n", anneesMax);
+    printf(" -durée de simulation : int (années entières)\n");
+    printf(" Valeur maximale: %d.\n", anneesMax);
+    printf(" ATTENTION: Cette valeur nécessite une RAM de 32GB ainsi que 2 GB sur le disque dur.\n");
+    printf(" Voici une correspondance entre la taille de la RAM que vous avez et le nombre d'années maximales que vous pouvez entrer pour que le code puisse s'exécuter jusqu'à la fin:\n");
+    printf(" - RAM de 2 GB: max. 3 ans\n");
+    printf(" - RAM de 16 GB: max. 6 ans\n");
+    printf(" - RAM de 32 GB: max. 8 ans (il faut avoir encore 2 GB sur son disque dur)\n\n\n");
 
     double taux_croiss_pop;
     double taux_croiss_dechets;
     int duree;
 
-    printf("Entrez un taux de croissance annuel en pourcentage de la population mondiale  : \n\n");
+    printf("Entrez un taux de croissance annuel en pourcentage de la population mondiale (format attendu: double): \n\n");
     scanf("%lf", &taux_croiss_pop);
     //gestion d'erreur:
     while (taux_croiss_pop > popMax)
@@ -624,26 +636,27 @@ int main(int argc, char *argv[])
     printf("\n\n");
     printf("Démarrage de la Simulation.\n\n");
     printf("Simulation en cours...\n");
-    printf("Cela peut prendre plusieurs dizaines de minutes selon les paramètres entrés...\n\n");
+    printf("Cela peut prendre plusieurs dizaines de minutes voire plusieurs heures selon les paramètres entrés...\n\n");
 
-    // Calcul de la taille des tableaux malloc de chaque pays selon les inputs de l'utilisateur.ice:
+    // Réservation de l'espace pour la taille totale des tableaux malloc de chaque pays selon les inputs de l'utilisateur.ice:
     unsigned long *longueur_tableaux = calloc(26, sizeof(unsigned long));
 
     // On définit le tableau du nombre de paquet de plastique en temps réel émis par chaque pays:
     unsigned long *longueur_reelle_tableaux = calloc(26, sizeof(unsigned long));
 
-    //TABLEAU FINAL RENVOYÉ À L'UTILISATEUR.ICE CONTENANT LES COMPTEURS DE PLASTIQUES DE CHAQUE ANNÉE:
+    // TABLEAU FINAL RENVOYÉ À L'UTILISATEUR.ICE CONTENANT LES COMPTEURS DE PLASTIQUES DE CHAQUE ANNÉE:
     unsigned long *CSV_output = calloc(360 * 720 * (duree + 1), sizeof(unsigned long));
-    //ORGANISATION:
-    //1 ligne = 1 année
-    //chaque colone = valeur du compteur de plastique pour une case
-    //indexation car tableau 1D: année * 360*720 + colone (=i)
+    // ORGANISATION:
+    // 1 ligne = 1 année
+    // chaque colonne = valeur du compteur de plastique pour la case i
+    // indexation car tableau 1D: année * 360*720 + colonne(=i)
 
     // On définit les mallocs pour chaque pays
-    //Comme chaque pays a un nombre différent de point GPGS d'intérêt (de 1 à 3), des population et des taux
-    //de production de déchet différent il était plus judicieux de créer un tableau pour chaque pays.
+    // Comme chaque pays a un nombre différent de point(s) GPGS d'intérêt (de 1 à 3), des taux de population et 
+    // de production de déchets différents, nous avons décidé de créer un tableau pour chaque pays.
     // Cependant, nous aurions aussi pu faire un seul tableau malloc, avec une indexation bien définie, qui prend en compte le nombre
-    // changeant de villes par pays. Le code aurait été plus court, l'indexation plus compliquée.
+    // changeant de villes par pays. Le code aurait été plus court, l'indexation plus compliquée, mais la complexité temporelle et la
+    // place réservée les mêmes.
     struct paquet *Australie = NULL;
     struct paquet *Canada = NULL;
     struct paquet *Chili = NULL;
@@ -678,13 +691,13 @@ int main(int argc, char *argv[])
     // durée totale de la simulation: duree[années]*365 car nous actualisons notre système tous les jours:
     // Nous considérons 48 points GPS (villes côtières du pacifique ou autres points pertinants) qui relâchent des déchets dans l'océan:
 
-    //On écrit dans notre tableau final les valeurs intitiales avant de lancer la simmulation: (GPGP initial)
+    // On écrit dans notre tableau final les valeurs intitiales avant de lancer la simulation: (GPGP initial)
     for (int i = 0; i < 360 * 720; i++)
     {
         CSV_output[i] += Cases[i].compteur;
     }
 
-    //Actualisation journalière du système:
+    // Actualisation journalière du système:
     for (int a = 0; a < duree; a++)
     {
         for (int j = 0; j < 365; j++)
@@ -697,7 +710,7 @@ int main(int argc, char *argv[])
             //nombre de ville à considérer dans ce pays:
             int nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // taux de production de déchet en [kg plastique dans l'ocean /person/day]:
             double actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             double new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -705,13 +718,13 @@ int main(int argc, char *argv[])
             double actual_pop = (pays_inputs[1 + 5 * pays_parcourus] * pays_inputs[2 + 5 * pays_parcourus] / 100);
             double new_pop = actual_pop * pow(1 + taux_croiss_pop / 100, a);
 
-            //parcourt de chaque ville/point GPS d'intérêt:
+            // parcourt de chaque ville/point GPS d'intérêt:
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
-                //émission des déchets:
+                // émission des déchets:
                 double kg_plastique_emis = new_pop * new_rate / nb_villes * 1; //[kg], on a un jour donc *1
                 unsigned long nb_paquets_emis = kg2nb(kg_plastique_emis, plast_par_paquet);
 
@@ -724,24 +737,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Australie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPSS de la ville:
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     Australie[p].lat = lat;
                     Australie[p].longi = longi;
                     Australie[p].i = 0;
                 }
-                //Prise en compte des nouveaux paquets émits:
+                // Prise en compte des nouveaux paquets émis:
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens émis durant les ittérations précédentes dans l'océan:
+                //Déplacement des nouveaux plastiques émis et anciens émis durant les itérations précédentes dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Australie[p], saturation);
@@ -753,7 +764,7 @@ int main(int argc, char *argv[])
             ////// Canada //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -763,7 +774,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -778,24 +789,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Canada = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPSS de la ville:
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Canada[p].lat = lat;
                     Canada[p].longi = longi;
                     Canada[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Canada[p], saturation);
@@ -807,7 +816,7 @@ int main(int argc, char *argv[])
             ////// CHILI //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -817,7 +826,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -832,24 +841,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Chili = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Chili[p].lat = lat;
                     Chili[p].longi = longi;
                     Chili[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Chili[p], saturation);
@@ -861,7 +868,7 @@ int main(int argc, char *argv[])
             ////// CHINE //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -871,7 +878,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -886,24 +893,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Chine = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPSS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Chine[p].lat = lat;
                     Chine[p].longi = longi;
                     Chine[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Chine[p], saturation);
@@ -915,7 +920,7 @@ int main(int argc, char *argv[])
             ////// COLOMBIE //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -925,7 +930,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -940,24 +945,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Colombie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Colombie[p].lat = lat;
                     Colombie[p].longi = longi;
                     Colombie[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Colombie[p], saturation);
@@ -969,7 +972,7 @@ int main(int argc, char *argv[])
             ////// COSTARICA //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -979,7 +982,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -994,24 +997,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     CostaRica = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     CostaRica[p].lat = lat;
                     CostaRica[p].longi = longi;
                     CostaRica[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&CostaRica[p], saturation);
@@ -1023,7 +1024,7 @@ int main(int argc, char *argv[])
             ////// ECUADOR //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1033,7 +1034,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1048,24 +1049,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Ecuador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Ecuador[p].lat = lat;
                     Ecuador[p].longi = longi;
                     Ecuador[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Ecuador[p], saturation);
@@ -1077,7 +1076,7 @@ int main(int argc, char *argv[])
             ////// SALVADOR //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1087,7 +1086,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1102,24 +1101,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Salvador = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Salvador[p].lat = lat;
                     Salvador[p].longi = longi;
                     Salvador[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Salvador[p], saturation);
@@ -1131,7 +1128,7 @@ int main(int argc, char *argv[])
             ////// GUATEMALA //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1141,7 +1138,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1156,24 +1153,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Guatemala = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Guatemala[p].lat = lat;
                     Guatemala[p].longi = longi;
                     Guatemala[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Guatemala[p], saturation);
@@ -1185,7 +1180,7 @@ int main(int argc, char *argv[])
             ////// HONDURAS //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1195,7 +1190,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1210,24 +1205,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Honduras = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Honduras[p].lat = lat;
                     Honduras[p].longi = longi;
                     Honduras[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Honduras[p], saturation);
@@ -1239,7 +1232,7 @@ int main(int argc, char *argv[])
             ////// HONGKONG //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1249,7 +1242,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1264,24 +1257,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     HongKong = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     HongKong[p].lat = lat;
                     HongKong[p].longi = longi;
                     HongKong[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&HongKong[p], saturation);
@@ -1293,7 +1284,7 @@ int main(int argc, char *argv[])
             ////// INDONESIE //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1303,7 +1294,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1318,24 +1309,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Indonesie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Indonesie[p].lat = lat;
                     Indonesie[p].longi = longi;
                     Indonesie[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Indonesie[p], saturation);
@@ -1347,7 +1336,7 @@ int main(int argc, char *argv[])
             ////// JAPON //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1357,7 +1346,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1366,25 +1355,28 @@ int main(int argc, char *argv[])
 
                 if (a == 0 && j == 0 && c == 0)
                 {
-                    double new_rate_max = actual_rate * pow(1 + taux_croiss_dechets / 100, duree);
-                    double new_pop_max = actual_pop * pow(1 + taux_croiss_pop / 100, duree);
-                    double kg_plastique_emis_max = new_pop_max * new_rate_max / nb_villes * 1;
-                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max, plast_par_paquet);
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max * nb_villes * 365 * duree;
-                    Japon = malloc(longueur_tableaux[pays_parcourus] * sizeof(struct paquet));
+                    for (int a = 0; a<duree; a++)
+                    {
+                        double new_rate_l = actual_rate* pow(1+taux_croiss_dechets/100,a);
+                        double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
+                        double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
+                        unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
+                        longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
+                    }
+                    Japon = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Japon[p].lat = lat;
                     Japon[p].longi = longi;
                     Japon[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Japon[p], saturation);
@@ -1396,7 +1388,7 @@ int main(int argc, char *argv[])
             ////// COREE DU NORD //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1406,7 +1398,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1421,24 +1413,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     CoreeDuNord = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     CoreeDuNord[p].lat = lat;
                     CoreeDuNord[p].longi = longi;
                     CoreeDuNord[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&CoreeDuNord[p], saturation);
@@ -1450,7 +1440,7 @@ int main(int argc, char *argv[])
             ////// COREE DU SUD //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1460,7 +1450,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1469,25 +1459,28 @@ int main(int argc, char *argv[])
 
                 if (a == 0 && j == 0 && c == 0)
                 {
-                    double new_rate_max = actual_rate * pow(1 + taux_croiss_dechets / 100, duree);
-                    double new_pop_max = actual_pop * pow(1 + taux_croiss_pop / 100, duree);
-                    double kg_plastique_emis_max = new_pop_max * new_rate_max / nb_villes * 1;
-                    unsigned long nb_paquets_emis_max = kg2nb(kg_plastique_emis_max, plast_par_paquet);
-                    longueur_tableaux[pays_parcourus] = nb_paquets_emis_max * nb_villes * 365 * duree;
-                    CoreeDuSud = malloc(longueur_tableaux[pays_parcourus] * sizeof(struct paquet));
+                    for (int a = 0; a<duree; a++)
+                    {
+                        double new_rate_l = actual_rate* pow(1+taux_croiss_dechets/100,a);
+                        double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
+                        double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
+                        unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
+                        longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
+                    }
+                    CoreeDuSud = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     CoreeDuSud[p].lat = lat;
                     CoreeDuSud[p].longi = longi;
                     CoreeDuSud[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&CoreeDuSud[p], saturation);
@@ -1499,7 +1492,7 @@ int main(int argc, char *argv[])
             ////// MALAISIE //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1509,7 +1502,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1524,24 +1517,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Malaisie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Malaisie[p].lat = lat;
                     Malaisie[p].longi = longi;
                     Malaisie[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Malaisie[p], saturation);
@@ -1553,7 +1544,7 @@ int main(int argc, char *argv[])
             ////// MEXIQUE //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1563,7 +1554,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1578,24 +1569,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Mexique = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Mexique[p].lat = lat;
                     Mexique[p].longi = longi;
                     Mexique[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Mexique[p], saturation);
@@ -1607,7 +1596,7 @@ int main(int argc, char *argv[])
             ////// NOUVELLE CALEDONIE //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1617,7 +1606,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1632,24 +1621,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     NouvelleCaledonie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     NouvelleCaledonie[p].lat = lat;
                     NouvelleCaledonie[p].longi = longi;
                     NouvelleCaledonie[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&NouvelleCaledonie[p], saturation);
@@ -1661,7 +1648,7 @@ int main(int argc, char *argv[])
             ////// NICARAGUA //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1671,7 +1658,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1686,24 +1673,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Nicaragua = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Nicaragua[p].lat = lat;
                     Nicaragua[p].longi = longi;
                     Nicaragua[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Nicaragua[p], saturation);
@@ -1715,7 +1700,7 @@ int main(int argc, char *argv[])
             ////// PANAMA //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1725,7 +1710,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1740,24 +1725,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Panama = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Panama[p].lat = lat;
                     Panama[p].longi = longi;
                     Panama[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Panama[p], saturation);
@@ -1769,7 +1752,7 @@ int main(int argc, char *argv[])
             ////// PEROU //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1779,7 +1762,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1794,24 +1777,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Perou = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Perou[p].lat = lat;
                     Perou[p].longi = longi;
                     Perou[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Perou[p], saturation);
@@ -1823,7 +1804,7 @@ int main(int argc, char *argv[])
             ////// PHILIPPINES //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1833,7 +1814,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1848,24 +1829,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Philippines = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Philippines[p].lat = lat;
                     Philippines[p].longi = longi;
                     Philippines[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Philippines[p], saturation);
@@ -1877,7 +1856,7 @@ int main(int argc, char *argv[])
             ////// RUSSIE //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1887,7 +1866,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1902,24 +1881,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Russie = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Russie[p].lat = lat;
                     Russie[p].longi = longi;
                     Russie[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Russie[p], saturation);
@@ -1931,7 +1908,7 @@ int main(int argc, char *argv[])
             ////// SINGAPOUR //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1941,7 +1918,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -1956,24 +1933,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Singapour = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Singapour[p].lat = lat;
                     Singapour[p].longi = longi;
                     Singapour[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Singapour[p], saturation);
@@ -1985,7 +1960,7 @@ int main(int argc, char *argv[])
             ////// USA //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -1995,7 +1970,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -2010,24 +1985,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     USA = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     USA[p].lat = lat;
                     USA[p].longi = longi;
                     USA[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&USA[p], saturation);
@@ -2039,7 +2012,7 @@ int main(int argc, char *argv[])
             ////// VIETNAM //////
             nb_villes = pays_inputs[0 + 5 * pays_parcourus];
 
-            //ACTUALISATION DES RATES (car augmentation annuelle):
+            // ACTUALISATION DES RATES (car augmentation annuelle):
             // rate en [kg plastique dans l'ocean /person/day]
             actual_rate = pays_inputs[4 + 5 * pays_parcourus];
             new_rate = actual_rate * pow(1 + taux_croiss_dechets / 100, a);
@@ -2049,7 +2022,7 @@ int main(int argc, char *argv[])
 
             for (int c = 0; c < nb_villes; c++)
             {
-                //Coordonnée GPS considérées:
+                // Coordonnée GPS considérées:
                 double lat = gps_inputs[1 + 7 * nb_villes_parcourues];
                 double longi = gps_inputs[0 + 7 * nb_villes_parcourues];
 
@@ -2064,24 +2037,22 @@ int main(int argc, char *argv[])
                         double new_pop_l = actual_pop*pow(1+taux_croiss_pop/100,a);
                         double kg_plastique_emis_l = new_pop_l*new_rate_l/nb_villes*1;
                         unsigned long nb_paquets_emis_l = kg2nb(kg_plastique_emis_l,plast_par_paquet);
-                        //longueur_tab += nb_paquets_emis_l*nb_villes*365;
                         longueur_tableaux[pays_parcourus] += nb_paquets_emis_l*nb_villes*365;                   
                     }
-                    //longueur_tableaux[pays_parcourus] = longueur_tab;
                     Vietnam = malloc( longueur_tableaux[pays_parcourus] * sizeof (struct paquet));
                 }
 
-                //Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS de la ville:
+                // Initialiser les structures des nouveaux paquets émis avec les coordonnées GPS
                 for (int p = 0 + longueur_reelle_tableaux[pays_parcourus]; p < nb_paquets_emis + longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
-                    //indexation : indice ligne * indice colone * nb total de colone
+                    // indexation : indice ligne * indice colonne * nb total de colonnes
                     Vietnam[p].lat = lat;
                     Vietnam[p].longi = longi;
                     Vietnam[p].i = 0;
                 }
                 longueur_reelle_tableaux[pays_parcourus] += nb_paquets_emis;
 
-                //Déplacement des nouveaux plastiques émis et anciens dans l'océan:
+                // Déplacement des nouveaux plastiques émis et anciens dans l'océan:
                 for (int p = 0; p < longueur_reelle_tableaux[pays_parcourus]; p++)
                 {
                     plastique(&Vietnam[p], saturation);
@@ -2091,18 +2062,18 @@ int main(int argc, char *argv[])
             pays_parcourus += 1;
         }
 
-        //On update notre tableau final on y mettant les valeurs des compteurs obtenus pour l'année en cours
+        // On update notre tableau final on y mettant les valeurs des compteurs obtenus pour l'année en cours
         for (int i = 0; i < 360 * 720; i++)
         {
             CSV_output[(a + 1) * 360 * 720 + i] = Cases[i].compteur;
         }
     }
 
-    //Écriture des données de chaque années dans le CSV final:
+    // Écriture des données de chaque années dans le CSV final:
     char *filename = "actualisationGPGP.csv";
     writeCsv(filename, CSV_output, (duree + 1));
 
-    //Libération de la mémoire:
+    // Libération de la mémoire:
     free(Cases);
     free(gps_inputs);
     free(pays_inputs);
