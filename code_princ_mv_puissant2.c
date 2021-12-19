@@ -585,7 +585,7 @@ int main(int argc, char *argv[])
 
     double taux_croiss_pop = 10;
     double taux_croiss_dechets = 50;
-    int duree = 9;
+    int duree = 8;
 
     printf("Entrez un taux de croissance annuel en pourcentage de la population mondiale  : \n\n");
     //scanf("%lf", &taux_croiss_pop);

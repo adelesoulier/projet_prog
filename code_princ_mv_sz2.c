@@ -570,7 +570,9 @@ int main(int argc, char *argv[])
     {
         printf("\n");
         printf("La simulation ne peut pas commencer car les fichiers n'ont pas tous été trouvés.\n");
-        printf("Veuillez vérifier les chemins d'accès aux fichiers NVELmoyenne.csv, EVELmoyenne.csv, gps_inputs.csv et pays_inputs.csv puis relancer le code.\n");
+        printf("Veuillez vérifier les chemins d'accès aux fichiers NVELmoyenne.csv, EVELmoyenne.csv, gps_inputs.csv \n");
+        printf("puis relancer le code.\n");
+
         return 0;
     }
 
@@ -588,16 +590,18 @@ int main(int argc, char *argv[])
     printf(" \n \n");
     printf(" Projet de Programmation: Simulation du continent de plastique , the GPGP (the Great Pacific Garbage Patch . \n\n\n");
     printf(" Les taux de croissances que vous allez entrer fonctionnent de la manière suivante: \n\n"); 
-    printf(" Chaque année durant la période qui sera entrée, la population et le taux de production de déchet augmenteront ou diminueront selon les valeurs entrées. \n\n");
+    printf(" Chaque année durant la période qui sera entrée, la population et le taux de production de déchet augmenteront ou \n");
+    printf(" diminueront selon les valeurs entrées. \n\n");
     printf(" Les formats attendus sont les suivants: \n\n");
     printf(" -taux de croissance annuel en pourcentage de la population mondiale : double  \n");
     printf(" Valeur maximale: %0.0f.\n\n", popMax);
     printf(" -taux de croissance annuel en pourcentage de la production de déchet mondiale : double\n");
     printf(" Valeur maximale: %0.0f.\n\n", prodMax);
     printf(" -durée de simulation : int (années entières)\n");
-    printf(" Valeur maximale: %d.\n", anneesMax);
-    printf(" ATTENTION: Cette valeur nécessite une RAM de 32GB ainsi que 2 GB sur le disque dur.\n");
-    printf(" Voici une correspondance entre la taille de la RAM que vous avez et le nombre d'années maximales que vous pouvez entrer pour que le code puisse s'exécuter jusqu'à la fin:\n");
+    printf(" Valeur maximale: %d.\n\n", anneesMax);
+    printf(" ATTENTION: \n Cette valeur nécessite une RAM de 32GB ainsi que 2 GB sur le disque dur.\n");
+    printf(" Voici une correspondance entre la taille de la RAM que vous avez et le nombre d'années maximales que vous pouvez entrer \n");
+    printf(" pour que le code puisse s'exécuter jusqu'à la fin:\n");
     printf(" - RAM de 2 GB: max. 3 ans\n");
     printf(" - RAM de 16 GB: max. 6 ans\n");
     printf(" - RAM de 32 GB: max. 8 ans (il faut avoir encore 2 GB sur son disque dur)\n\n\n");
