@@ -8,7 +8,7 @@
 // On définit les structures:
 
 // Celle pour une case de 0.5° x 0.5° :
-// composition longitudinale et transversale du courant dedans et compteur de plastique.
+// composition longitudinale et transversale du courant à l'intérieur et compteur de plastique.
 struct courants
 {
     double compoN;
@@ -21,7 +21,7 @@ struct courants
 // Explication de l'indice i:
 // - i = 0 : si le paquet vient d'arriver sur la case actuelle (n'y était pas à l'itération d'avant)
 // - i = 1 : si le paquet était déjà sur la case actuelle (à l'itération d'avant)
-// - i = 2 : le paquet est à côté d'une case saturée ou sur un continent/île (= immobile)
+// - i = 2 : le paquet est à côté d'une case saturée ou sur un continent/île (=> immobile)
 struct paquet
 {
     double lat;
@@ -29,8 +29,8 @@ struct paquet
     int i;
 };
 
-// On définit le tableau de structures (tableau malloc) qui
-// contiendra toutes les cases. (structure globale du tableau expliquée dans le main)
+// On définit le tableau de structures (tableau malloc) qui contiendra
+// les cases du monde entier. (structure globale du tableau expliquée dans le main)
 // Le fait qu'on définit ici le tableau nous permet de ne pas
 // devoir la rentrer en argument à chaque fois qu'on veut l'utiliser
 // dans une fonction.
@@ -48,7 +48,7 @@ int writeCsv(char *filename, unsigned long *tableau, int duree)
     FILE *fichier = fopen(filename, "w+");
     if (fichier == NULL)
     {
-        printf("File %s can't be created.", filename);
+        printf("Le fichier %s ne peut pas être créé.", filename);
         return 0;
     }
 
@@ -78,7 +78,7 @@ bool readCsvCourantsNVEL(char *filenameNVEL, int sizeLong, int sizeLat)
 
     if (fileN == NULL)
     {
-        fprintf(stderr, "File %s not found.\n", filenameNVEL);
+        fprintf(stderr, "Le fichier %s n'a pas été trouvé.\n", filenameNVEL);
         return false;
     }
 
@@ -116,7 +116,7 @@ bool readCsvCourantsEVEL(char *filenameEVEL, int sizeLong, int sizeLat)
 
     if (fileE == NULL)
     {
-        fprintf(stderr, "File %s not found.\n", filenameEVEL);
+        fprintf(stderr, "Le fichier %s n'a pas été trouvé.\n", filenameEVEL);
         return false;
     }
 
@@ -155,7 +155,7 @@ bool readCsvGen(char *filename, double *values, int sizeX, int sizeY, int skip_x
     FILE *file = fopen(filename, "r");
     if (file == NULL)
     {
-        fprintf(stderr, "File %s not found.\n", filename);
+        fprintf(stderr, "Le fichier %s n'a pas été trouvé.\n", filename);
         return false;
     }
 
@@ -206,9 +206,9 @@ double randomNumber(double max)
     // entre 0 et max non compris (on est en double)
 }
 
-//////////////////////////////
-// FONCTIONS DE CONVERSIONS //
-//////////////////////////////
+///////////////////////////////
+/// FONCTIONS DE CONVERSION ///
+///////////////////////////////
 
 // Fonction qui fait la conversion des coordonnées (lat,longi) en indice de tableau 1D
 // dimension du tableau : (360*720) <=> (latitude x longitude) (tableau représentant les case de 0.5° x 0.5°)
@@ -216,20 +216,28 @@ int ll2i(int longi, int lat){ // cette fonction est nécessaire pour GPGPinit
     int i = lat * 720 + longi;
     return i;}
 
-// Conversion des latitudes et longitudes exactes (pas forcément .25 ou .75, longi et lat selon le référentiel
+// Conversion des latitudes et longitudes exactes (pas forcément .25 ou .75, longi et lat; selon le référentiel
 // géographique) en index i du tableau, c'est à dire dans quelle case de 0.5°x0.5° nous sommes :
 int exactocasei(double longi, double lat){
-    //conversion de la latitude exacte en l'indice  de la ligne correspondant (donne un entier pour tous les .25 et .75):
+    // conversion de la latitude exacte en l'indice de la ligne correspondant (donne un entier pour tous les .25 et .75):
+    // EXPLICATION D'INDEXATION DES CASES:
+    // Si nous indexons notre grille en 2D, le point (0;0) correspondant aux valeurs (-89.75;-179.75)
+    // serait tout en bas à gauche sur un planisphère mondial. **
     lat = (lat + 89.75) * 2;
     // idem, mais de longi en colonne :
     longi = (longi + 179.75) * 2;
-    // arrondir à l'entier le plus proche (pas de fonction qui le fait directement,
-    // mais si on fait + 0.5 revient au même que d'arrondir à l'entier le plus proche)
-    // une valeur ayany une partie décimale =0.5 est arrondie au DESSUS (choix délibéré)
+    // arrondir à l'entier le plus proche
+    // une valeur ayant une partie décimale =0.5 est arrondie au-DESSUS (choix délibéré)
     lat = (int)floor(lat + 0.5);
     longi = (int)floor(longi + 0.5);
     // convertion en indice i du tableau:
     int i = lat * 720 + longi;
+    // ** En utilisant ce système d'indexation pour passer du 2D en 1D, nous commençons donc par le bas à gauche,
+    // puis lisons la ligne vers la droite et continuons avec la ligne du dessus.
+    // Lorsque nous écrivons le fichier csv d'output (voir à la fin du code), nous parcourons i de 0 à 360*720-1,
+    // i.e. le csv est écrit "à l'envers": l'indice 0 correspond bien à la case tout en bas à gauche. Or, quand
+    // nous lisons ce fichier, nous faisons correspondre les bons index (pour la case 0 les (lat,long)=(-89.75;-179.75)),
+    // ce qui donne un résultat correct quand nous l'affichons sur cartopy.
     return i;}
 
 
@@ -252,12 +260,12 @@ unsigned long kg2nb(double kg, int plast_par_paquet){
     double densiteMacro = 41.05;     // [nb/kg]
     double masseMega = 0.5357 * kg;  // [kg]
     double masseMacro = 0.2551 * kg; // [kg]
-    // les valeurs 53.57% et 25.51% correspondent à la masse de la catégorie de plastique coonsidérée dans le continent
-    // par rapport à la masse totale de plastiques
-    //(ici on prend en compte les micro- et les mésoplastiques car ils sont tout de même émis)
-    // cependant de ne prendre que les macro- et les megaplastiques nous donne une idée de combien chaque pays produit
+    // les valeurs 53.57% et 25.51% correspondent à la masse de la catégorie de plastique considérée dans le continent
+    // par rapport à la masse totale de plastique (pour cla on prend en compte les micro- et les mésoplastiques car ils
+    // sont tout de même émis).
+    // Cependant de ne prendre que les macro- et les megaplastiques nous donne une idée de combien chaque pays produit
     // proporitonnellement aux autres.
-    //Prendre les micro- et mésoplastiques en compte nous prendrait beaucoup trop de place sur
+    // Prendre les micro- et mésoplastiques en compte nous prendrait beaucoup trop de place sur
     // l'ordinateur (pas assez de RAM), car le ratio nombre/poids est énorme.
 
     unsigned long nbMega = (unsigned long)(masseMega * densiteMega / plast_par_paquet + 0.5);    // on arrondit à l'entier le plus proche
@@ -492,12 +500,11 @@ int main(int argc, char *argv[])
     // On réserve la mémoire pour notre tableau de cases de 0.5° x 0.5°
     Cases = calloc(720 * 360, sizeof(struct courants));
 
-    // Comme énnoncé précédement, le planisphère mondial est découpé en cases de 0.5° x 0.5°  (lat, longi) :
+    // Comme énnoncé précédemment, le planisphère mondial est découpé en cases de 0.5° x 0.5°  (lat, longi) :
     // LONGITUDES = COLONNES (720) = x = compoE
-    // LATITUDES = LIGNES (360) = Y = compoN
-    // avec la conversion lat = (lat + 89.75)*2 pour convertir les latitudes en index du tableau
-    // (pour plus de précisions, aller voir dans fonctions de conversions, lat2i1d ou exactocasei)
-    // et pour les longitudes: longi = (longi + 179.75)*2 (voir long2i1D)
+    // LATITUDES = LIGNES (360) = y = compoN
+    // pour l'explication d'indexation des cases, aller voir dans la fonction de conversion exactocasei
+
 
     // nombre de plastiques par paquet propagé
     int plast_par_paquet = 10000;

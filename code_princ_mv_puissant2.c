@@ -563,7 +563,7 @@ int main(int argc, char *argv[])
     // On fixe les taux maximaux d'augmentation de production et de population,
     //ainsi que le nombre d'années maximal pour la simmulation (des entrées plus grandes ne seraient pas
     // gérables et entraîneraient des segmentation fault)
-    int anneesMax = 15;
+    int anneesMax = 9;
     double prodMax = 50;
     double popMax = 10;
 
@@ -583,36 +583,36 @@ int main(int argc, char *argv[])
     printf("-durée de simulation : int (années entières)\n");
     printf(" Valeur maximale: %d.\n\n\n", anneesMax);
 
-    double taux_croiss_pop;
-    double taux_croiss_dechets;
-    int duree;
+    double taux_croiss_pop = 10;
+    double taux_croiss_dechets = 50;
+    int duree = 9;
 
     printf("Entrez un taux de croissance annuel en pourcentage de la population mondiale  : \n\n");
-    scanf("%lf", &taux_croiss_pop);
+    //scanf("%lf", &taux_croiss_pop);
     //gestion d'erreur:
-    while (taux_croiss_pop > popMax)
+    if (taux_croiss_pop > popMax)
     {
         printf("Votre valeur dépasse la valeur demandée. Veuillez en rentrer une nouvelle.\n");
-        scanf("%lf", &taux_croiss_pop);
+        //scanf("%lf", &taux_croiss_pop);
     }
     printf("\n");
 
     printf("Entrez un taux de croissance annuel en pourcentage de la production de déchet mondiale (format attendu: double): \n\n");
     scanf("%lf", &taux_croiss_dechets);
     //gestion d'erreur:
-    while (taux_croiss_dechets > prodMax)
+    if (taux_croiss_dechets > prodMax)
     {
         printf("Votre valeur dépasse la valeur demandée. Veuillez en rentrer une nouvelle.\n");
-        scanf("%lf", &taux_croiss_dechets);
+        //scanf("%lf", &taux_croiss_dechets);
     }
     printf("\n");
     printf("Entrez une durée de simulation (années entières)(format attendu: int): \n\n");
-    scanf("%d", &duree);
+    //scanf("%d", &duree);
     //gestion d'erreur:
-    while (duree > anneesMax)
+    if (duree > anneesMax)
     {
         printf("Votre valeur dépasse la valeur demandée. Veuillez en rentrer une nouvelle.\n");
-        scanf("%d", &duree);
+        //scanf("%d", &duree);
     }
     printf("\n\n");
     printf("Démarrage de la Simulation.\n\n");
