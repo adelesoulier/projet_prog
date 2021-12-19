@@ -29,18 +29,18 @@ Coordinates:
 
 #ouverture des fichier .nc:
 
-ds1 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201501.nc.part").load()
-ds2 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201502.nc.part").load()
-ds3 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201503.nc.part").load()
-ds4 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201504.nc.part").load()
-ds5 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201505.nc.part").load()
-ds6 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201506.nc.part").load()
-ds7 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201507.nc.part").load()
-ds8 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201508.nc.part").load()
-ds9 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201509.nc.part").load()
-ds10 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201510.nc.part").load()
-ds11 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201511.nc").load()
-ds12 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/EVEL 2015/EVEL_201512.nc").load()
+ds1 = xr.open_dataset("EVEL 2015/EVEL_201501.nc.part").load()
+ds2 = xr.open_dataset("EVEL 2015/EVEL_201502.nc.part").load()
+ds3 = xr.open_dataset("EVEL 2015/EVEL_201503.nc.part").load()
+ds4 = xr.open_dataset("EVEL 2015/EVEL_201504.nc.part").load()
+ds5 = xr.open_dataset("EVEL 2015/EVEL_201505.nc.part").load()
+ds6 = xr.open_dataset("EVEL 2015/EVEL_201506.nc.part").load()
+ds7 = xr.open_dataset("EVEL 2015/EVEL_201507.nc.part").load()
+ds8 = xr.open_dataset("EVEL 2015/EVEL_201508.nc.part").load()
+ds9 = xr.open_dataset("EVEL 2015/EVEL_201509.nc.part").load()
+ds10 = xr.open_dataset("EVEL 2015/EVEL_201510.nc.part").load()
+ds11 = xr.open_dataset("EVEL 2015/EVEL_201511.nc").load()
+ds12 = xr.open_dataset("EVEL 2015/EVEL_201512.nc").load()
 
 
 #GÉNÉRER LE TABLEAU 2D (LATTITUDE, LONGITUDE) DES DONNÉES À LA SURFACE:
@@ -88,18 +88,18 @@ np.savetxt("EVELmoyenne.csv", evelmoyconverted, delimiter="," )
 
 #ouverture des fichier .nc:
 
-ds1 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201501.nc.part").load()
-ds2 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201502.nc.part").load()
-ds3 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201503.nc.part").load()
-ds4 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201504.nc.part").load()
-ds5 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201505.nc.part").load()
-ds6 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201506.nc.part").load()
-ds7 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201507.nc.part").load()
-ds8 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201508.nc").load()
-ds9 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201509.nc.part").load()
-ds10 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201510.nc.part").load()
-ds11 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201511.nc.part").load()
-ds12 = xr.open_dataset("/Users/adele/Desktop/RENDU FINALS PROJET PAS TOCHER/construction_moyennes/NVEL 2015/NVEL_201512.nc.part").load()
+ds1 = xr.open_dataset("NVEL 2015/NVEL_201501.nc.part").load()
+ds2 = xr.open_dataset("NVEL 2015/NVEL_201502.nc.part").load()
+ds3 = xr.open_dataset("NVEL 2015/NVEL_201503.nc.part").load()
+ds4 = xr.open_dataset("NVEL 2015/NVEL_201504.nc.part").load()
+ds5 = xr.open_dataset("NVEL 2015/NVEL_201505.nc.part").load()
+ds6 = xr.open_dataset("NVEL 2015/NVEL_201506.nc.part").load()
+ds7 = xr.open_dataset("NVEL 2015/NVEL_201507.nc.part").load()
+ds8 = xr.open_dataset("NVEL 2015/NVEL_201508.nc").load()
+ds9 = xr.open_dataset("NVEL 2015/NVEL_201509.nc.part").load()
+ds10 = xr.open_dataset("NVEL 2015/NVEL_201510.nc.part").load()
+ds11 = xr.open_dataset("NVEL_201511.nc.part").load()
+ds12 = xr.open_dataset("NVEL 2015/NVEL_201512.nc.part").load()
 
 #GÉNÉRER LE TABLEAU 2D (LATTITUDE, LONGITUDE) DES DONNÉES À LA SURFACE:
 nvel1=ds1.NVEL[0,0,:, :].values
@@ -135,9 +135,12 @@ for lat in range(nvel1.shape[0]):
 NVEL: composante longitudinale de la vitesse'''
 
 nvelmoyconverted=np.copy(nvelmoy)
+lati = np.arange(-89.75, 90.25, 0.5)
 for lat in range(nvelmoy.shape[0]):
     for long in range(nvelmoy.shape[1]):
-      nvelmoyconverted[lat,long]=nvelmoy[lat,long]*3600/(40075* 10**3 * np.cos(lat*np.pi/180)/360)
+      nvelmoyconverted[lat,long]=nvelmoy[lat,long]*3600/(40075* 10**3 * np.cos(np.radians(lati[lat]))/360)
+
+
 
 
 #On crée le fichier csv voulu (long, lat)
