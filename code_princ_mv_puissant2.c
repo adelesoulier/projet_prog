@@ -685,11 +685,15 @@ int main(int argc, char *argv[])
     ////////////////////////////////////////
     //////////// Où on se situe/////////////
     printf("année: %d\n", a);
+    fflush(stdout);
     ////////////////////////////////////////
     ////////////////////////////////////////
     ////////////////////////////////////////
         for (int j = 0; j < 365; j++)
         {
+            printf("jour: %d\n", j);
+            fflush(stdout);
+
             int nb_villes_parcourues = 0;
             int pays_parcourus = 0;
 
@@ -2097,6 +2101,10 @@ int main(int argc, char *argv[])
         {
             CSV_output[(a + 1) * 360 * 720 + i] = Cases[i].compteur;
         }
+        char filename[100];
+        sprintf(filename, "annee%d.csv", a);
+        writeCsv(filename, CSV_output, (a+1));
+
     }
 
     //Écriture des données de chaque années dans le CSV final:
