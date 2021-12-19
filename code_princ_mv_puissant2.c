@@ -598,7 +598,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     printf("Entrez un taux de croissance annuel en pourcentage de la production de déchet mondiale (format attendu: double): \n\n");
-    scanf("%lf", &taux_croiss_dechets);
+    //scanf("%lf", &taux_croiss_dechets);
     //gestion d'erreur:
     if (taux_croiss_dechets > prodMax)
     {
