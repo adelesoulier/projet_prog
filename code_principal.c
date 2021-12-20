@@ -603,8 +603,10 @@ int main(int argc, char *argv[])
     printf(" Voici une correspondance entre la taille de la RAM que vous avez et le nombre d'années maximales que vous pouvez entrer \n");
     printf(" pour que le code puisse s'exécuter jusqu'à la fin:\n");
     printf(" - RAM de 2 GB: max. 3 ans\n");
+    printf(" - RAM de 4 GB: max. 4 ans\n");
+    printf(" - RAM de 8 GB: max. 5 ans\n");
     printf(" - RAM de 16 GB: max. 6 ans\n");
-    printf(" - RAM de 32 GB: max. 8 ans (il faut avoir encore 2 GB sur son disque dur)\n\n\n");
+    printf(" - RAM de 32 GB: max. 8 ans (il faut avoir encore 2 GB de mémoire swap sur son disque dur).\n\n\n");
 
     double taux_croiss_pop;
     double taux_croiss_dechets;
